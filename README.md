@@ -19,7 +19,7 @@
 
 ## Introduction
 
-OpenGeodeWeb-Microservice is a dedicated service that manages the database logic extracted from the OpenGeodeWeb-Back (OGWB) project. It provides a REST API for managing geological data and associated metadata.
+Database model and ORM layer for the OpenGeodeWeb ecosystem.
 
 ## Changelog
 

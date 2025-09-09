@@ -7,30 +7,21 @@ name = "OpenGeodeWeb-Microservice"
 version = "1.0.0"
 dynamic = ["dependencies"]
 authors = [{ name = "Geode-solutions", email = "team-web@geode-solutions.com" }]
-description = "Microservice Python pour la gestion des données et de la base de données de l'écosystème OpenGeodeWeb"
+description = "Database model and ORM layer for OpenGeodeWeb ecosystem"
 readme = "README.md"
 requires-python = ">=3.9, <3.13"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
-    "Framework :: Flask",
-    "Topic :: Database",
-    "Topic :: Scientific/Engineering",
 ]
 
 [project.urls]
 "Homepage" = "https://github.com/Geode-solutions/OpenGeodeWeb-Microservice"
 "Bug Tracker" = "https://github.com/Geode-solutions/OpenGeodeWeb-Microservice/issues"
-"Repository" = "https://github.com/Geode-solutions/OpenGeodeWeb-Microservice.git"
 
 [tool.setuptools.dynamic]
 dependencies = { file = ["requirements.txt"] }
 
 [tool.setuptools.packages.find]
 where = ["src"]
-
-[tool.setuptools.package-data]
-"ogwm" = ["*.json"]
-"ogwm.routes" = ["*.json"]
-"ogwm.models" = ["*.json"]
