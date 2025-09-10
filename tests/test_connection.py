@@ -3,7 +3,6 @@ from src.opengeodeweb_microservice.database.session import (
     get_session,
     get_database_connection,
 )
-from src.opengeodeweb_microservice.database.connection import DatabaseConnection
 from src.opengeodeweb_microservice.microservice.data import Data
 
 
