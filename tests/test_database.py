@@ -1,5 +1,8 @@
 import pytest
-from src.opengeodeweb_microservice.database.session import get_session, get_database_connection
+from src.opengeodeweb_microservice.database.session import (
+    get_session,
+    get_database_connection,
+)
 from src.opengeodeweb_microservice.microservice.data import Data
 
 
@@ -12,10 +15,7 @@ def test_database_connection(app_context):
 
 
 def test_data_creation_and_retrieval(app_context, clean_database):
-    data = Data.create(
-        geode_object="test_object",
-        input_file="test.txt"
-    )
+    data = Data.create(geode_object="test_object", input_file="test.txt")
     assert data.id is not None
     assert data.geode_object == "test_object"
     session = get_session()
@@ -27,10 +27,7 @@ def test_data_creation_and_retrieval(app_context, clean_database):
 
 def test_data_with_additional_files(app_context, clean_database):
     files = ["file1.txt", "file2.txt"]
-    data = Data.create(
-        geode_object="test_with_files",
-        additional_files=files
-    )
+    data = Data.create(geode_object="test_with_files", additional_files=files)
     session = get_session()
     session.session.commit()
     retrieved = Data.get(data.id)

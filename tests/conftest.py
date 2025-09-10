@@ -9,11 +9,11 @@ from src.opengeodeweb_microservice.microservice.data import Data
 def app():
     app = Flask(__name__)
     app.config["TESTING"] = True
-    
+
     BASE_DIR = os.path.abspath(os.path.dirname(__file__))
     db_path = os.path.join(BASE_DIR, "test_project.db")
     app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{db_path}"
-    
+
     with app.app_context():
         db = init_database(app, "test_project.db")
         yield app
@@ -21,11 +21,12 @@ def app():
             session = get_session()
             if session:
                 session.session.close()
-                if hasattr(session, 'engine'):
+                if hasattr(session, "engine"):
                     session.engine.dispose()
         except Exception:
             pass
     import time
+
     time.sleep(0.1)
     if os.path.exists(db_path):
         try:
