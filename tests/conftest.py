@@ -8,15 +8,18 @@ from src.opengeodeweb_microservice.microservice.data import Data
 @pytest.fixture(scope="session")
 def app():
     app = Flask(__name__)
-    app.config.update({
-        "TESTING": True,
-        "SQLALCHEMY_DATABASE_URI": f"sqlite:///{os.path.join(os.path.dirname(__file__), 'test_project.db')}",
-        "SQLALCHEMY_TRACK_MODIFICATIONS": False
-    })
+    app.config.update(
+        {
+            "TESTING": True,
+            "SQLALCHEMY_DATABASE_URI": f"sqlite:///{os.path.join(os.path.dirname(__file__), 'test_project.db')}",
+            "SQLALCHEMY_TRACK_MODIFICATIONS": False,
+        }
+    )
     with app.app_context():
         init_database(app, "test_project.db")
         yield app
         _cleanup_database()
+
 
 def _cleanup_database():
     try:
