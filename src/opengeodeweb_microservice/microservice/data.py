@@ -4,6 +4,7 @@ from ..database.connection import get_session
 from .base import Base
 import uuid
 
+
 class Data(Base):
     __tablename__ = "datas"
 
