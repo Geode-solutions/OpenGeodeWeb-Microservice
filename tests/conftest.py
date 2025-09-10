@@ -7,26 +7,24 @@ from src.opengeodeweb_microservice.microservice.data import Data
 @pytest.fixture(scope="session")
 def app():
     app = Flask(__name__)
-    app.config["TESTING"] = True
-    BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-    db_path = os.path.join(BASE_DIR, "test_project.db")
-    app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{db_path}"
-    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    app.config.update({
+        "TESTING": True,
+        "SQLALCHEMY_DATABASE_URI": f"sqlite:///{os.path.join(os.path.dirname(__file__), 'test_project.db')}",
+        "SQLALCHEMY_TRACK_MODIFICATIONS": False
+    })
     with app.app_context():
         init_database(app, "test_project.db")
         yield app
-        _cleanup_database_connections()
-    _remove_test_database(db_path)
+        _cleanup_database()
 
-def _cleanup_database_connections():
+def _cleanup_database():
     try:
         session = get_session()
         if session:
             session.close()
     except Exception:
         pass
-
-def _remove_test_database(db_path: str):
+    db_path = os.path.join(os.path.dirname(__file__), "test_project.db")
     if os.path.exists(db_path):
         try:
             os.remove(db_path)

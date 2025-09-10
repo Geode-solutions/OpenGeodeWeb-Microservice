@@ -6,7 +6,6 @@ from flask_sqlalchemy import SQLAlchemy
 from ..microservice.base import Base
 
 DATABASE_FILENAME = "project.db"
-
 db: Optional[SQLAlchemy] = None
 
 def init_database(app: Flask, db_filename: str = DATABASE_FILENAME) -> SQLAlchemy:
@@ -22,9 +21,6 @@ def get_database() -> Optional[SQLAlchemy]:
     return db
 
 def get_session():
-    if db is None:
-        return None
-    return db.session
+    return db.session if db else None
 
-def get_database_connection():
-    return get_database()
+get_database_connection = get_database
