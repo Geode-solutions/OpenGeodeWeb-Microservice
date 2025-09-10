@@ -4,7 +4,6 @@ from flask_sqlalchemy import SQLAlchemy
 
 from src.opengeodeweb_microservice.database.connection import DatabaseConnection
 
-# Global database instance
 _database_connection = DatabaseConnection()
 
 
