@@ -1,6 +1,7 @@
 from sqlalchemy import String, JSON
 from sqlalchemy.orm import Mapped, mapped_column
-from src.opengeodeweb_microservice.microservice.base import database, Base
+from ..database.session import get_session
+from .base import Base
 import uuid
 
 
@@ -36,10 +37,12 @@ class Data(Base):
             light_viewable=None,
         )
 
-        database.session.add(data_entry)
-        database.session.flush()
+        session = get_session()
+        session.session.add(data_entry)
+        session.session.flush()
         return data_entry
 
     @staticmethod
     def get(data_id: str) -> "Data | None":
-        return database.session.get(Data, data_id)
+        session = get_session()
+        return session.session.get(Data, data_id)
