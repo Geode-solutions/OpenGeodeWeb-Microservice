@@ -1,9 +1,10 @@
 """Database connection management"""
 
-from typing import Optional, Any
-from sqlalchemy.orm import Session
+from typing import Optional
+from sqlalchemy.orm import scoped_session
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from flask_sqlalchemy.session import Session
 from ..microservice.base import Base
 
 DATABASE_FILENAME = "project.db"
@@ -24,7 +25,7 @@ def get_database() -> Optional[SQLAlchemy]:
     return db
 
 
-def get_session() -> Optional[Session]:
+def get_session() -> Optional[scoped_session[Session]]:
     return db.session if db else None
 
 
