@@ -23,9 +23,9 @@ def app():
 def _cleanup_database_connections():
     try:
         session = get_session()
-        if session and hasattr(session, 'session'):
+        if session and hasattr(session, "session"):
             session.session.close()
-        if session and hasattr(session, 'engine'):
+        if session and hasattr(session, "engine"):
             session.engine.dispose()
     except Exception:
         pass
