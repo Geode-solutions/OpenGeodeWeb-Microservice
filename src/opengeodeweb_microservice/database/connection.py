@@ -20,6 +20,8 @@ def init_database(app: Flask, db_filename: str = DATABASE_FILENAME) -> SQLAlchem
         db.create_all()
     return db
 
+get_database_connection = get_database
+
 
 def get_database() -> Optional[SQLAlchemy]:
     return db
@@ -27,6 +29,3 @@ def get_database() -> Optional[SQLAlchemy]:
 
 def get_session() -> Optional[scoped_session[Session]]:
     return db.session if db else None
-
-
-get_database_connection = get_database
