@@ -4,6 +4,7 @@ from flask import Flask
 from src.opengeodeweb_microservice.database.connection import init_database, get_session
 from src.opengeodeweb_microservice.microservice.data import Data
 
+
 @pytest.fixture(scope="session")
 def app():
     app = Flask(__name__)
@@ -31,10 +32,12 @@ def _cleanup_database():
         except PermissionError:
             pass
 
+
 @pytest.fixture
 def app_context(app):
     with app.app_context():
         yield
+
 
 @pytest.fixture
 def clean_database(app_context):
