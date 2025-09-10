@@ -24,7 +24,7 @@ def get_database() -> Optional[SQLAlchemy]:
     return db
 
 
-def get_session() -> Optional[Any]:
+def get_session() -> Optional[Session]:
     return db.session if db else None
 
 
