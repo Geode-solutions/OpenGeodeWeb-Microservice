@@ -1,9 +1,8 @@
 from sqlalchemy import String, JSON
 from sqlalchemy.orm import Mapped, mapped_column
-from ..database.session import get_session
+from ..database.connection import get_session
 from .base import Base
 import uuid
-
 
 class Data(Base):
     __tablename__ = "datas"
@@ -38,11 +37,14 @@ class Data(Base):
         )
 
         session = get_session()
-        session.session.add(data_entry)
-        session.session.flush()
+        if session:
+            session.add(data_entry)
+            session.flush()
         return data_entry
 
     @staticmethod
     def get(data_id: str) -> "Data | None":
         session = get_session()
-        return session.session.get(Data, data_id)
+        if session:
+            return session.get(Data, data_id)
+        return None

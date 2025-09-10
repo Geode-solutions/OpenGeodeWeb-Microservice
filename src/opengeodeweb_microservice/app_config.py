@@ -1,6 +1,8 @@
 import os
-from .database.session import DATABASE_FILENAME
+from .database.connection import DATABASE_FILENAME
 
+class Config:
+    pass
 
 class ProdConfig(Config):
     DATA_FOLDER_PATH = "/data"

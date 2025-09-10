@@ -1,9 +1,8 @@
 import os
 import pytest
 from flask import Flask
-from src.opengeodeweb_microservice.database.session import init_database, get_session
+from src.opengeodeweb_microservice.database.connection import init_database, get_session
 from src.opengeodeweb_microservice.microservice.data import Data
-
 
 @pytest.fixture(scope="session")
 def app():
@@ -19,17 +18,13 @@ def app():
         _cleanup_database_connections()
     _remove_test_database(db_path)
 
-
 def _cleanup_database_connections():
     try:
         session = get_session()
-        if session and hasattr(session, "session"):
-            session.session.close()
-        if session and hasattr(session, "engine"):
-            session.engine.dispose()
+        if session:
+            session.close()
     except Exception:
         pass
-
 
 def _remove_test_database(db_path: str):
     if os.path.exists(db_path):
@@ -38,22 +33,20 @@ def _remove_test_database(db_path: str):
         except PermissionError:
             pass
 
-
 @pytest.fixture
 def app_context(app):
     with app.app_context():
         yield
 
-
 @pytest.fixture
 def clean_database(app_context):
     session = get_session()
     if session:
-        session.session.query(Data).delete()
-        session.session.commit()
+        session.query(Data).delete()
+        session.commit()
     yield
     if session:
         try:
-            session.session.rollback()
+            session.rollback()
         except Exception:
             pass

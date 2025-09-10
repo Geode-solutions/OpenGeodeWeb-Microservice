@@ -3,26 +3,28 @@
 from typing import Optional
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from ..microservice.base import Base
 
-from src.opengeodeweb_microservice.microservice.base import Base
+DATABASE_FILENAME = "project.db"
 
+db: Optional[SQLAlchemy] = None
 
-class DatabaseConnection:
+def init_database(app: Flask, db_filename: str = DATABASE_FILENAME) -> SQLAlchemy:
+    global db
+    if db is None:
+        db = SQLAlchemy(model_class=Base)
+    db.init_app(app)
+    with app.app_context():
+        db.create_all()
+    return db
 
-    def __init__(self, database_filename: str = "project.db"):
-        self.database_filename = database_filename
-        self.database: Optional[SQLAlchemy] = None
+def get_database() -> Optional[SQLAlchemy]:
+    return db
 
-    def init_app(self, app: Flask) -> SQLAlchemy:
-        if self.database is None:
-            self.database = SQLAlchemy(model_class=Base)
+def get_session():
+    if db is None:
+        return None
+    return db.session
 
-        self.database.init_app(app)
-
-        with app.app_context():
-            self.database.create_all()
-
-        return self.database
-
-    def get_database(self) -> Optional[SQLAlchemy]:
-        return self.database
+def get_database_connection():
+    return get_database()
