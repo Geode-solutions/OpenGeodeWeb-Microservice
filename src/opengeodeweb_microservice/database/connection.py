@@ -1,6 +1,7 @@
 """Database connection management"""
 
 from typing import Optional
+from sqlalchemy.orm import Session
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from ..microservice.base import Base
