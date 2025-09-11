@@ -41,6 +41,7 @@ class Data(Base):
         if session:
             session.add(data_entry)
             session.flush()
+            session.commit()
         return data_entry
 
     @staticmethod
