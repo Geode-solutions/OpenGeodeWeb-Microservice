@@ -1,8 +1,5 @@
-from src.opengeodeweb_microservice.database.connection import (
-    get_session,
-    get_database,
-)
-from src.opengeodeweb_microservice.microservice.data import Data
+from src.opengeodeweb_microservice.database.connection import get_session, get_database
+from src.opengeodeweb_microservice.database.data import Data
 
 
 def test_database_connection_basic(app_context):

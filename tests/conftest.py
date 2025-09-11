@@ -2,7 +2,7 @@ import os
 import pytest
 from flask import Flask
 from src.opengeodeweb_microservice.database.connection import init_database, get_session
-from src.opengeodeweb_microservice.microservice.data import Data
+from src.opengeodeweb_microservice.database.data import Data
 
 
 @pytest.fixture(scope="session")

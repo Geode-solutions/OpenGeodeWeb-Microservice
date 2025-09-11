@@ -1,5 +1,5 @@
 from src.opengeodeweb_microservice.database.connection import get_session
-from src.opengeodeweb_microservice.microservice.data import Data
+from src.opengeodeweb_microservice.database.data import Data
 
 
 def test_data_crud_operations():

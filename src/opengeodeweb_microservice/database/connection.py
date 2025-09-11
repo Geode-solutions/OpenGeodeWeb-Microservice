@@ -5,7 +5,7 @@ from sqlalchemy.orm import scoped_session
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_sqlalchemy.session import Session
-from ..microservice.base import Base
+from .base import Base
 
 DATABASE_FILENAME = "project.db"
 db: Optional[SQLAlchemy] = None

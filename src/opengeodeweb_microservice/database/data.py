@@ -1,6 +1,6 @@
 from sqlalchemy import String, JSON
 from sqlalchemy.orm import Mapped, mapped_column
-from ..database.connection import get_session
+from .connection import get_session
 from .base import Base
 import uuid
 
