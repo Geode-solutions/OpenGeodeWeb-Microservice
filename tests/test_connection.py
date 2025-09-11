@@ -5,7 +5,7 @@ from src.opengeodeweb_microservice.database.connection import (
 from src.opengeodeweb_microservice.microservice.data import Data
 
 
-def test_database_connection_basic():
+def test_database_connection_basic(app_context):
     session = get_session()
     assert session is not None
     connection = get_database_connection()
