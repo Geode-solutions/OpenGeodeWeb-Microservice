@@ -1,0 +1,36 @@
+{
+  "name": "@geode/opengeodeweb-microservice",
+  "version": "0.0.0",
+  "description": "Shared utilities and schema generator for OpenGeodeWeb ecosystem",
+  "main": "generate_schemas.js",
+  "bin": {
+    "ogw-generate-schemas": "./generate_schemas.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 0",
+    "build": "echo \"Error: no test specified\" && exit 0"
+  },
+  "dependencies": {
+    "glob": "^11.0.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Geode-solutions/OpenGeodeWeb-Microservice.git"
+  },
+  "author": {
+    "name": "Geode-solutions",
+    "email": "contact@geode-solutions.com",
+    "url": "https://geode-solutions.com/"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Geode-solutions/OpenGeodeWeb-Microservice/issues"
+  },
+  "homepage": "https://github.com/Geode-solutions/OpenGeodeWeb-Microservice",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "generate_schemas.js"
+  ]
+}
