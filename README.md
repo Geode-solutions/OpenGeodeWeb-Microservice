@@ -1,4 +1,4 @@
-<h1 align="center">OpenGeodeWeb-Back<sup><i>by Geode-solutions</i></sup></h1>
+<h1 align="center">OpenGeodeWeb-Microservice<sup><i>by Geode-solutions</i></sup></h1>
 <h3 align="center">OpenSource Python framework based on OpenGeode</h3>
 
 <p align="center">
