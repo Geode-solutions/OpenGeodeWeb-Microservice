@@ -25,8 +25,8 @@ class Data(Base):
         input_file: str | None = None,
         additional_files: list[str] | None = None,
     ) -> "Data":
-        input_file = input_file if input_file is not None else ""
-        additional_files = additional_files if additional_files is not None else []
+        input_file = input_file or ""
+        additional_files = additional_files or []
 
         data_entry = Data(
             geode_object=geode_object,
@@ -38,15 +38,12 @@ class Data(Base):
         )
 
         session = get_session()
-        if session:
-            session.add(data_entry)
-            session.flush()
-            session.commit()
+        session.add(data_entry)
+        session.flush()
+        session.commit()
         return data_entry
 
     @staticmethod
     def get(data_id: str) -> "Data | None":
         session = get_session()
-        if session:
-            return session.get(Data, data_id)
-        return None
+        return session.get(Data, data_id)
