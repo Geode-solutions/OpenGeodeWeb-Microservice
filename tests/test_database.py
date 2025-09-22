@@ -1,12 +1,10 @@
-from src.opengeodeweb_microservice.database.connection import get_session
 from src.opengeodeweb_microservice.database.data import Data
 
 
-def test_data_crud_operations():
+def test_data_crud_operations(clean_database):
     data = Data.create(geode_object="test_object", input_file="test.txt")
     assert data.id is not None
-    session = get_session()
-    session.commit()
+
     retrieved = Data.get(data.id)
     assert retrieved is not None
     assert retrieved.geode_object == "test_object"
@@ -14,10 +12,10 @@ def test_data_crud_operations():
     assert non_existent is None
 
 
-def test_data_with_additional_files():
+def test_data_with_additional_files(clean_database):
     files = ["file1.txt", "file2.txt"]
     data = Data.create(geode_object="test_files", additional_files=files)
-    session = get_session()
-    session.commit()
+
     retrieved = Data.get(data.id)
+    assert retrieved is not None
     assert retrieved.additional_files == files
