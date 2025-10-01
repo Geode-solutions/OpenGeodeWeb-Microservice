@@ -1,7 +1,7 @@
 """Database connection management"""
 
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, scoped_session
+from sqlalchemy.orm import sessionmaker, scoped_session, Session
 from .base import Base
 
 DATABASE_FILENAME = "project.db"
@@ -23,7 +23,7 @@ def init_database(db_path: str = DATABASE_FILENAME) -> None:
         Base.metadata.create_all(engine)
 
 
-def get_session() -> scoped_session:
+def get_session() -> scoped_session[Session]:
     if scoped_session_registry is None:
         raise RuntimeError()
     return scoped_session_registry
