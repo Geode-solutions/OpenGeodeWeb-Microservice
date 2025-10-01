@@ -3,6 +3,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from .connection import get_session
 from .base import Base
 import uuid
+from typing import cast
 
 
 class Data(Base):
@@ -46,4 +47,4 @@ class Data(Base):
     @staticmethod
     def get(data_id: str) -> "Data | None":
         session = get_session()
-        return session.get(Data, data_id)
+        return cast("Data | None", session.get(Data, data_id))

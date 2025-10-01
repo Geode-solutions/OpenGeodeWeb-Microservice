@@ -23,7 +23,7 @@ def init_database(db_path: str = DATABASE_FILENAME) -> None:
         Base.metadata.create_all(engine)
 
 
-def get_session():
+def get_session() -> scoped_session:
     if scoped_session_registry is None:
         raise RuntimeError()
     return scoped_session_registry
