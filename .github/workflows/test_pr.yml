@@ -7,6 +7,4 @@ on:
 jobs:
   test:
     uses: Geode-solutions/actions/.github/workflows/py-test-pr.yml@master
-    with:
-      npm: true
     secrets: inherit

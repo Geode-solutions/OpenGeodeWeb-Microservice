@@ -1,2 +1,26 @@
 SQLAlchemy==2.0.43
 fastjsonschema==2.21.1
+    # via -r requirements.in
+flask==3.1.2
+    # via flask-sqlalchemy
+flask-sqlalchemy==3.1.1
+    # via -r requirements.in
+greenlet==3.2.4
+    # via sqlalchemy
+itsdangerous==2.2.0
+    # via flask
+jinja2==3.1.6
+    # via flask
+markupsafe==3.0.2
+    # via
+    #   flask
+    #   jinja2
+    #   werkzeug
+sqlalchemy==2.0.43
+    # via
+    #   -r requirements.in
+    #   flask-sqlalchemy
+typing-extensions==4.15.0
+    # via sqlalchemy
+werkzeug==3.1.3
+    # via flask
