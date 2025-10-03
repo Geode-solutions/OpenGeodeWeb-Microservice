@@ -1,29 +1,29 @@
 """Database connection management"""
 
-from typing import Optional
-from sqlalchemy.orm import scoped_session
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from flask_sqlalchemy.session import Session
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, scoped_session, Session
 from .base import Base
 
 DATABASE_FILENAME = "project.db"
-db: Optional[SQLAlchemy] = None
+
+engine = None
+session_factory = None
+scoped_session_registry = None
 
 
-def init_database(app: Flask, db_filename: str = DATABASE_FILENAME) -> SQLAlchemy:
-    global db
-    if db is None:
-        db = SQLAlchemy(model_class=Base)
-    db.init_app(app)
-    with app.app_context():
-        db.create_all()
-    return db
+def init_database(db_path: str = DATABASE_FILENAME) -> None:
+    global engine, session_factory, scoped_session_registry
+
+    if engine is None:
+        engine = create_engine(
+            f"sqlite:///{db_path}", connect_args={"check_same_thread": False}
+        )
+        session_factory = sessionmaker(bind=engine)
+        scoped_session_registry = scoped_session(session_factory)
+        Base.metadata.create_all(engine)
 
 
-def get_database() -> Optional[SQLAlchemy]:
-    return db
-
-
-def get_session() -> Optional[scoped_session[Session]]:
-    return db.session if db else None
+def get_session() -> scoped_session[Session]:
+    if scoped_session_registry is None:
+        raise RuntimeError()
+    return scoped_session_registry
