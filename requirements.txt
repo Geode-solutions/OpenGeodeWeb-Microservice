@@ -6,7 +6,7 @@
 #
 fastjsonschema==2.21.1
     # via -r requirements.in
-greenlet~=3.0
+greenlet~=3.2
     # via sqlalchemy
 sqlalchemy~=2.0
     # via -r requirements.in
