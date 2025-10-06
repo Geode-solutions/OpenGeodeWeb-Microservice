@@ -10,5 +10,5 @@ greenlet~=3.2
     # via sqlalchemy
 sqlalchemy~=2.0
     # via -r requirements.in
-typing-extensions~=4.0
+typing-extensions~=4.15
     # via sqlalchemy
