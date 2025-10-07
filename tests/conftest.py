@@ -30,11 +30,12 @@ def _cleanup_database(db_path: str):
 
 @pytest.fixture(autouse=True)
 def clean_database():
-    session = get_session()
-    session.query(Data).delete()
-    session.commit()
-    yield
-    try:
-        session.rollback()
-    except Exception:
-        pass
+    with get_session() as session:
+        session = get_session()
+        session.query(Data).delete()
+        session.commit()
+        yield
+        try:
+            session.rollback()
+        except Exception:
+            pass
