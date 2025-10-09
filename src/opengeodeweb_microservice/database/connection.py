@@ -28,7 +28,7 @@ def init_database(db_path: str = DATABASE_FILENAME) -> None:
         print(f"Database engine already exists for {db_path}, reusing", flush=True)
 
 
-def get_session() -> scoped_session[Session]:
+def get_session() -> Session:
     if scoped_session_registry is None:
         raise RuntimeError()
     return scoped_session_registry()
