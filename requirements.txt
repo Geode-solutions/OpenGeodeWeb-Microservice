@@ -6,10 +6,10 @@
 #
 fastjsonschema==2.21.1
     # via -r requirements.in
-greenlet==3.2.4
+greenlet>=3
     # via sqlalchemy
-sqlalchemy==2.0.43
+sqlalchemy>=2
     # via -r requirements.in
-typing-extensions==4.15.0
+typing-extensions>=4
     # via sqlalchemy
 
