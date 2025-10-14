@@ -1,9 +1,8 @@
-from sqlalchemy import String, JSON
+from sqlalchemy import String, JSON, select
 from sqlalchemy.orm import Mapped, mapped_column
 from .connection import get_session
 from .base import Base
 import uuid
-from typing import cast
 
 
 class Data(Base):
@@ -47,4 +46,5 @@ class Data(Base):
     @staticmethod
     def get(data_id: str) -> "Data | None":
         session = get_session()
-        return cast("Data | None", session.get(Data, data_id))
+        data_query = select(Data).where(Data.id == data_id)
+        return session.scalars(data_query).first()
