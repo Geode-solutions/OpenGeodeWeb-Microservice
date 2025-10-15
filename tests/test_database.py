@@ -3,7 +3,10 @@ from src.opengeodeweb_microservice.database.data import Data
 
 def test_data_crud_operations(clean_database):
     data = Data.create(
-        geode_object="test_object", input_file="test.txt", additional_files=[]
+        geode_object="test_object",
+        viewer_object="test_viewer",
+        input_file="test.txt",
+        additional_files=[],
     )
     print("id", data.id, flush=True)
     assert data.id is not None
@@ -21,7 +24,9 @@ def test_data_crud_operations(clean_database):
 
 def test_data_with_additional_files(clean_database):
     files = ["file1.txt", "file2.txt"]
-    data = Data.create(geode_object="test_files", additional_files=files)
+    data = Data.create(
+        geode_object="test_files", viewer_object="test_viewer", additional_files=files
+    )
     assert data.id is not None
     assert isinstance(data.id, str)
 

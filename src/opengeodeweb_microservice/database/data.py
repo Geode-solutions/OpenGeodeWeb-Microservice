@@ -11,9 +11,11 @@ class Data(Base):
     id: Mapped[str] = mapped_column(
         String, primary_key=True, default=lambda: str(uuid.uuid4()).replace("-", "")
     )
-    native_file_name: Mapped[str] = mapped_column(String, nullable=False)
-    viewable_file_name: Mapped[str] = mapped_column(String, nullable=False)
     geode_object: Mapped[str] = mapped_column(String, nullable=False)
+    viewer_object: Mapped[str] = mapped_column(String, nullable=False)
+
+    native_file_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    viewable_file_name: Mapped[str | None] = mapped_column(String, nullable=True)
 
     light_viewable: Mapped[str | None] = mapped_column(String, nullable=True)
     input_file: Mapped[str | None] = mapped_column(String, nullable=True)
@@ -22,19 +24,15 @@ class Data(Base):
     @staticmethod
     def create(
         geode_object: str,
+        viewer_object: str,
         input_file: str | None = None,
         additional_files: list[str] | None = None,
     ) -> "Data":
-        input_file = input_file or ""
-        additional_files = additional_files or []
-
         data_entry = Data(
             geode_object=geode_object,
+            viewer_object=viewer_object,
             input_file=input_file,
             additional_files=additional_files,
-            native_file_name="",
-            viewable_file_name="",
-            light_viewable=None,
         )
 
         session = get_session()
