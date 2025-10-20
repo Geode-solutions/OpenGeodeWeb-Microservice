@@ -3,15 +3,13 @@
   "version": "0.0.0",
   "description": "Shared utilities and schema generator for OpenGeodeWeb ecosystem",
   "main": "generate_schemas.js",
-  "bin": {
-    "ogw-generate-schemas": "./generate_schemas.js"
-  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 0",
     "build": "echo \"Error: no test specified\" && exit 0"
   },
   "dependencies": {
-    "glob": "^11.0.3"
+    "glob": "^11.0.3",
+    "quicktype-core": "^23.2.6"
   },
   "repository": {
     "type": "git",
@@ -32,5 +30,6 @@
   },
   "files": [
     "generate_schemas.js"
-  ]
+  ],
+  "type": "module"
 }
