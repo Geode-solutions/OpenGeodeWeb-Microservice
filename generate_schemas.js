@@ -60,6 +60,7 @@ async function quicktypeJSONSchema(filename, jsonSchemaString) {
   return await quicktype({
     inputData,
     lang: "python",
+    rendererOptions: { "just-types": true, "python-version": "3.7" },
   });
 }
 
@@ -104,7 +105,7 @@ async function return_json_schema(directoryPath, folder_path, projectName) {
             filename,
             fileContent
           );
-          const pythonContent = "# type: ignore\n" + jsonTypes.join("\n");
+          const pythonContent = jsonTypes.join("\n");
           const pythonFile = path.join(folder.path, filename + ".py");
           fs.writeFileSync(pythonFile, pythonContent);
         } catch (error) {
