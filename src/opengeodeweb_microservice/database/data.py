@@ -38,7 +38,6 @@ class Data(Base):
         session = get_session()
         session.add(data_entry)
         session.flush()
-        session.commit()
         return data_entry
 
     @staticmethod
