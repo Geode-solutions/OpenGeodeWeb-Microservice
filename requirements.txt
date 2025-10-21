@@ -4,12 +4,24 @@
 #
 #    pip-compile --output-file=./requirements.txt ./requirements.in
 #
+dataclasses-json>=0
+    # via -r requirements.in
 fastjsonschema==2.21.1
     # via -r requirements.in
 greenlet>=3
     # via sqlalchemy
+marshmallow>=3
+    # via dataclasses-json
+mypy-extensions>=1
+    # via typing-inspect
+packaging==25.0
+    # via marshmallow
 sqlalchemy>=2
     # via -r requirements.in
 typing-extensions>=4
-    # via sqlalchemy
+    # via
+    #   sqlalchemy
+    #   typing-inspect
+typing-inspect>=0
+    # via dataclasses-json
 
