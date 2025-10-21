@@ -79,6 +79,7 @@ async function return_json_schema(directoryPath, folder_path, projectName) {
     if (folder.name == "schemas") {
       const jsonFiles = glob.sync(path.join(folder.path, "**/*.json"));
       var schemas = {};
+      let initContent = "";
       jsonFiles.forEach(async (filePath) => {
         try {
           const fileContent = fs.readFileSync(filePath, "utf8");
@@ -101,6 +102,7 @@ async function return_json_schema(directoryPath, folder_path, projectName) {
             })
             .join(separator);
           schemas[filename] = jsonData;
+          initContent += "from ." + filename + " import *\n";
           const { lines: jsonTypes } = await quicktypeJSONSchema(
             filename,
             fileContent
@@ -113,7 +115,9 @@ async function return_json_schema(directoryPath, folder_path, projectName) {
             "@dataclass\nclass $1(DataClassJsonMixin):"
           );
           const pythonFile = path.join(folder.path, filename + ".py");
+          const initFile = path.join(folder.path, "__init__.py");
           fs.writeFileSync(pythonFile, pythonContent);
+          fs.writeFileSync(initFile, initContent);
         } catch (error) {
           console.error(
             `Erreur lors de la lecture du fichier ${filePath}:`,
