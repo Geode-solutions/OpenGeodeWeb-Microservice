@@ -105,7 +105,13 @@ async function return_json_schema(directoryPath, folder_path, projectName) {
             filename,
             fileContent
           );
-          const pythonContent = jsonTypes.join("\n");
+          let pythonContent =
+            "from dataclasses_json import DataClassJsonMixin\n" +
+            jsonTypes.join("\n");
+          pythonContent = pythonContent.replace(
+            /@dataclass\nclass (\w+)(?:\s*\([^)]*\))?\s*:/g,
+            "@dataclass\nclass $1(DataClassJsonMixin):"
+          );
           const pythonFile = path.join(folder.path, filename + ".py");
           fs.writeFileSync(pythonFile, pythonContent);
         } catch (error) {
