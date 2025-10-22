@@ -64,7 +64,7 @@ async function quicktypeJSONSchema(filename, jsonSchemaString) {
   });
 }
 
-async function return_json_schema(directoryPath, folder_path, projectName) {
+function return_json_schema(directoryPath, folder_path, projectName) {
   console.log("return_json_schema", directoryPath, folder_path, projectName);
 
   const folders = fs
@@ -150,7 +150,7 @@ if (fs.existsSync(outputFile)) {
 async function main() {
   const finalJson = {};
   finalJson[projectName] = return_json_schema(directoryPath, "", projectName);
-
+  console.log("FINAL", outputFile, finalJson);
   fs.writeFileSync(outputFile, JSON.stringify(finalJson, null, 2));
 }
 
