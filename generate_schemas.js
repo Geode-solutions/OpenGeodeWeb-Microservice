@@ -1,7 +1,13 @@
-const fs = require("fs");
-const path = require("path");
-const glob = require("glob");
-const process = require("process");
+import fs from "fs";
+import path from "path";
+import { glob } from "glob";
+import process from "process";
+import {
+  quicktype,
+  InputData,
+  JSONSchemaInput,
+  FetchingJSONSchemaStore,
+} from "quicktype-core";
 
 console.log("process.argv", process.argv);
 
@@ -46,6 +52,18 @@ const directoryPath = findDirectoryPath(projectName, folderName);
 
 const outputFile = path.join(process.cwd(), `${projectName}_schemas.json`);
 
+async function quicktypeJSONSchema(filename, jsonSchemaString) {
+  const schemaInput = new JSONSchemaInput(new FetchingJSONSchemaStore());
+  await schemaInput.addSource({ name: filename, schema: jsonSchemaString });
+  const inputData = new InputData();
+  inputData.addInput(schemaInput);
+  return await quicktype({
+    inputData,
+    lang: "python",
+    rendererOptions: { "just-types": true, "python-version": "3.7" },
+  });
+}
+
 function return_json_schema(directoryPath, folder_path, projectName) {
   console.log("return_json_schema", directoryPath, folder_path, projectName);
 
@@ -61,7 +79,8 @@ function return_json_schema(directoryPath, folder_path, projectName) {
     if (folder.name == "schemas") {
       const jsonFiles = glob.sync(path.join(folder.path, "**/*.json"));
       var schemas = {};
-      jsonFiles.forEach((filePath) => {
+      let initContent = "";
+      jsonFiles.forEach(async (filePath) => {
         try {
           const fileContent = fs.readFileSync(filePath, "utf8");
           var jsonData = JSON.parse(fileContent);
@@ -69,15 +88,11 @@ function return_json_schema(directoryPath, folder_path, projectName) {
             .replace(/^.*[\\/]/, "")
             .replace(/\.[^/.]+$/, "");
           var route = jsonData[key];
-          console.log("FOLDER PATH", projectName);
           var values = [projectName, folder_path, route];
-          console.log("values", values);
           values = values.map(function (x) {
-            console.log("x", x);
             return x.replace("/", "").replace(".", "");
           }); // first replace first . / by empty string
           values = values.map(function (x) {
-            console.log("x", x);
             return x.replaceAll("/", separator).replaceAll(".", separator);
           }); // then replace all . / by separator
           console.log("values", values);
@@ -87,6 +102,22 @@ function return_json_schema(directoryPath, folder_path, projectName) {
             })
             .join(separator);
           schemas[filename] = jsonData;
+          initContent += "from ." + filename + " import *\n";
+          const { lines: jsonTypes } = await quicktypeJSONSchema(
+            filename,
+            fileContent
+          );
+          let pythonContent =
+            "from dataclasses_json import DataClassJsonMixin\n" +
+            jsonTypes.join("\n");
+          pythonContent = pythonContent.replace(
+            /@dataclass\nclass (\w+)(?:\s*\([^)]*\))?\s*:/g,
+            "@dataclass\nclass $1(DataClassJsonMixin):"
+          );
+          const pythonFile = path.join(folder.path, filename + ".py");
+          const initFile = path.join(folder.path, "__init__.py");
+          fs.writeFileSync(pythonFile, pythonContent);
+          fs.writeFileSync(initFile, initContent);
         } catch (error) {
           console.error(
             `Erreur lors de la lecture du fichier ${filePath}:`,
@@ -116,7 +147,11 @@ if (fs.existsSync(outputFile)) {
   fs.unlinkSync(outputFile);
 }
 
-const finalJson = {};
-finalJson[projectName] = return_json_schema(directoryPath, "", projectName);
+async function main() {
+  const finalJson = {};
+  finalJson[projectName] = return_json_schema(directoryPath, "", projectName);
+  console.log("FINAL", outputFile, finalJson);
+  fs.writeFileSync(outputFile, JSON.stringify(finalJson, null, 2));
+}
 
-fs.writeFileSync(outputFile, JSON.stringify(finalJson, null, 2));
+main();
