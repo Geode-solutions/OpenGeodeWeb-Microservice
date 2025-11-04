@@ -1,4 +1,4 @@
-from src.opengeodeweb_microservice.database.data import Data
+from opengeodeweb_microservice.database.data import Data
 
 
 def test_data_crud_operations(clean_database):

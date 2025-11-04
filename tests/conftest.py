@@ -1,7 +1,7 @@
 import os
 import pytest
-from src.opengeodeweb_microservice.database.connection import init_database, get_session
-from src.opengeodeweb_microservice.database.data import Data
+from opengeodeweb_microservice.database.connection import init_database, get_session
+from opengeodeweb_microservice.database.data import Data
 
 
 DB_PATH = os.path.join(os.path.dirname(__file__), "test_project.db")
