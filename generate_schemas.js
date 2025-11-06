@@ -77,6 +77,10 @@ function return_json_schema(directoryPath, folder_path, projectName) {
   var folders_schemas = {};
   folders.forEach((folder) => {
     if (folder.name == "schemas") {
+      const pythonFiles = glob.sync(path.join(folder.path, "**/*.py"));
+      pythonFiles.forEach((filePath) => {
+        fs.unlinkSync(filePath);
+      });
       const jsonFiles = glob.sync(path.join(folder.path, "**/*.json"));
       var schemas = {};
       let initContent = "";
