@@ -2,6 +2,9 @@
   "name": "@geode/opengeodeweb-microservice",
   "version": "0.0.0",
   "description": "Shared utilities and schema generator for OpenGeodeWeb ecosystem",
+  "bin": {
+    "opengeodeweb-microservice-generate": "./generate_schemas.js"
+  },
   "main": "generate_schemas.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 0",

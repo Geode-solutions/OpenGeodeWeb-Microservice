@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import fs from "fs";
 import path from "path";
 import { glob } from "glob";
@@ -115,7 +117,7 @@ function return_json_schema(directoryPath, folder_path, projectName) {
             jsonTypes.join("\n");
           pythonContent = pythonContent.replace(
             /@dataclass\nclass (\w+)(?:\s*\([^)]*\))?\s*:/g,
-            "@dataclass\nclass $1(DataClassJsonMixin):"
+            "@dataclass\nclass $1(DataClassJsonMixin):\n    def __post_init__(self):\n        print(self, flush=True)\n"
           );
           const pythonFile = path.join(folder.path, filename + ".py");
           const initFile = path.join(folder.path, "__init__.py");
