@@ -7,6 +7,7 @@
   },
   "main": "generate_schemas.js",
   "scripts": {
+    "json": "echo \"Error: no test specified\" && exit 0",
     "test": "echo \"Error: no test specified\" && exit 0",
     "build": "echo \"Error: no test specified\" && exit 0"
   },
