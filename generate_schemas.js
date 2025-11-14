@@ -117,7 +117,7 @@ function return_json_schema(directoryPath, folder_path, projectName) {
             jsonTypes.join("\n");
           pythonContent = pythonContent.replace(
             /@dataclass\nclass (\w+)(?:\s*\([^)]*\))?\s*:/g,
-            "@dataclass\nclass $1(DataClassJsonMixin):\n    def __post_init__(self):\n        print(self, flush=True)\n"
+            "@dataclass\nclass $1(DataClassJsonMixin):\n    def __post_init__(self) -> None:\n        print(self, flush=True)\n"
           );
           const pythonFile = path.join(folder.path, filename + ".py");
           const initFile = path.join(folder.path, "__init__.py");
