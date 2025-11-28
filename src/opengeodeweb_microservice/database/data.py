@@ -14,25 +14,25 @@ class Data(Base):
     geode_object: Mapped[str] = mapped_column(String, nullable=False)
     viewer_object: Mapped[str] = mapped_column(String, nullable=False)
 
-    native_filename: Mapped[str | None] = mapped_column(String, nullable=True)
-    viewable_filename: Mapped[str | None] = mapped_column(String, nullable=True)
+    native_file: Mapped[str | None] = mapped_column(String, nullable=True)
+    viewable_file: Mapped[str | None] = mapped_column(String, nullable=True)
 
-    light_viewable_filename: Mapped[str | None] = mapped_column(String, nullable=True)
-    input_filename: Mapped[str | None] = mapped_column(String, nullable=True)
-    additional_filenames: Mapped[list[str] | None] = mapped_column(JSON, nullable=True)
+    light_viewable_file: Mapped[str | None] = mapped_column(String, nullable=True)
+    input_file: Mapped[str | None] = mapped_column(String, nullable=True)
+    additional_files: Mapped[list[str] | None] = mapped_column(JSON, nullable=True)
 
     @staticmethod
     def create(
         geode_object: str,
         viewer_object: str,
-        input_filename: str | None = None,
-        additional_filenames: list[str] | None = None,
+        input_file: str | None = None,
+        additional_files: list[str] | None = None,
     ) -> "Data":
         data_entry = Data(
             geode_object=geode_object,
             viewer_object=viewer_object,
-            input_filename=input_filename,
-            additional_filenames=additional_filenames,
+            input_file=input_file,
+            additional_files=additional_files,
         )
 
         session = get_session()
