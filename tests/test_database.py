@@ -25,7 +25,9 @@ def test_data_crud_operations(clean_database):
 def test_data_with_additional_files(clean_database):
     files = ["file1.txt", "file2.txt"]
     data = Data.create(
-        geode_object="test_files", viewer_object="test_viewer", additional_filenames=files
+        geode_object="test_files",
+        viewer_object="test_viewer",
+        additional_filenames=files,
     )
     assert data.id is not None
     assert isinstance(data.id, str)
