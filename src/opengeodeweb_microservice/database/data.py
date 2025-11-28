@@ -14,10 +14,10 @@ class Data(Base):
     geode_object: Mapped[str] = mapped_column(String, nullable=False)
     viewer_object: Mapped[str] = mapped_column(String, nullable=False)
 
-    native_file_name: Mapped[str | None] = mapped_column(String, nullable=True)
-    viewable_file_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    native_file: Mapped[str | None] = mapped_column(String, nullable=True)
+    viewable_file: Mapped[str | None] = mapped_column(String, nullable=True)
 
-    light_viewable: Mapped[str | None] = mapped_column(String, nullable=True)
+    light_viewable_file: Mapped[str | None] = mapped_column(String, nullable=True)
     input_file: Mapped[str | None] = mapped_column(String, nullable=True)
     additional_files: Mapped[list[str] | None] = mapped_column(JSON, nullable=True)
 
