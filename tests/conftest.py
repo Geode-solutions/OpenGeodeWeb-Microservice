@@ -1,4 +1,5 @@
 import os
+from typing import Generator
 import pytest
 from opengeodeweb_microservice.database.connection import init_database, get_session
 from opengeodeweb_microservice.database.data import Data
@@ -8,13 +9,13 @@ DB_PATH = os.path.join(os.path.dirname(__file__), "test_project.db")
 
 
 @pytest.fixture(scope="session", autouse=True)
-def setup_database():
+def setup_database() -> Generator[None, None, None]:
     init_database(DB_PATH)
     yield
     _cleanup_database(DB_PATH)
 
 
-def _cleanup_database(db_path: str):
+def _cleanup_database(db_path: str) -> None:
     try:
         session = get_session()
         session.close()
@@ -29,7 +30,7 @@ def _cleanup_database(db_path: str):
 
 
 @pytest.fixture(autouse=True)
-def clean_database():
+def clean_database() -> Generator[None, None, None]:
     with get_session() as session:
         session = get_session()
         session.query(Data).delete()

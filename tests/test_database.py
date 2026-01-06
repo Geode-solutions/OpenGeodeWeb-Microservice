@@ -1,7 +1,7 @@
 from opengeodeweb_microservice.database.data import Data
 
 
-def test_data_crud_operations(clean_database):
+def test_data_crud_operations(clean_database: None) -> None:
     data = Data.create(
         geode_object="test_object",
         viewer_object="test_viewer",
@@ -22,7 +22,7 @@ def test_data_crud_operations(clean_database):
     assert non_existent is None
 
 
-def test_data_with_additional_files(clean_database):
+def test_data_with_additional_files(clean_database: None) -> None:
     files = ["file1.txt", "file2.txt"]
     data = Data.create(
         geode_object="test_files",
