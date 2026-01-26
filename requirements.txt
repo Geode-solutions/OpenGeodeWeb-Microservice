@@ -14,7 +14,7 @@ marshmallow>=3
     # via dataclasses-json
 mypy-extensions>=1
     # via typing-inspect
-packaging==25.0
+packaging==26.0
     # via marshmallow
 sqlalchemy>=2
     # via -r requirements.in
