@@ -37,7 +37,7 @@ class Data(Base):
             input_file=input_file,
             additional_files=additional_files,
         )
-        
+
         session = get_session()
         session.add(data_entry)
         session.flush()
