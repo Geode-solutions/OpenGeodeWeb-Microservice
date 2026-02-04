@@ -5,6 +5,7 @@ def test_data_crud_operations(clean_database: None) -> None:
     data = Data.create(
         geode_object="test_object",
         viewer_object="test_viewer",
+        viewer_elements_type="test_type",
         input_file="test.txt",
         additional_files=[],
     )
@@ -27,6 +28,7 @@ def test_data_with_additional_files(clean_database: None) -> None:
     data = Data.create(
         geode_object="test_files",
         viewer_object="test_viewer",
+        viewer_elements_type="test_type",
         additional_files=files,
     )
     assert data.id is not None

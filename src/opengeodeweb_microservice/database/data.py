@@ -13,6 +13,7 @@ class Data(Base):
     )
     geode_object: Mapped[str] = mapped_column(String, nullable=False)
     viewer_object: Mapped[str] = mapped_column(String, nullable=False)
+    viewer_elements_type: Mapped[str] = mapped_column(String, nullable=False)
 
     native_file: Mapped[str | None] = mapped_column(String, nullable=True)
     viewable_file: Mapped[str | None] = mapped_column(String, nullable=True)
@@ -25,12 +26,14 @@ class Data(Base):
     def create(
         geode_object: str,
         viewer_object: str,
+        viewer_elements_type: str,
         input_file: str | None = None,
         additional_files: list[str] | None = None,
     ) -> "Data":
         data_entry = Data(
             geode_object=geode_object,
             viewer_object=viewer_object,
+            viewer_elements_type=viewer_elements_type,
             input_file=input_file,
             additional_files=additional_files,
         )
