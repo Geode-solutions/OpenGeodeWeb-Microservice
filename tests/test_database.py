@@ -28,7 +28,7 @@ def test_data_with_file_assignments(clean_database: None) -> None:
         viewer_elements_type="test_type",
     )
     data_id = data.id
-    data.native_file = "original.og_brep"
+    data.native_file = "native.og_brep"
     data.viewable_file = "viewable.vtm"
     data.light_viewable_file = "light.vtp"
 
@@ -38,7 +38,7 @@ def test_data_with_file_assignments(clean_database: None) -> None:
 
     retrieved = Data.get(data_id)
     assert retrieved is not None
-    assert retrieved.native_file == "original.og_brep"
+    assert retrieved.native_file == "native.og_brep"
     assert retrieved.viewable_file == "viewable.vtm"
     assert retrieved.light_viewable_file == "light.vtp"
     assert retrieved.geode_object == "geode_object"
