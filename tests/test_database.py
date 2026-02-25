@@ -1,4 +1,5 @@
 from opengeodeweb_microservice.database.data import Data
+from opengeodeweb_microservice.database.connection import get_session
 
 
 def test_data_crud_operations(clean_database: None) -> None:
@@ -6,8 +7,6 @@ def test_data_crud_operations(clean_database: None) -> None:
         geode_object="test_object",
         viewer_object="test_viewer",
         viewer_elements_type="test_type",
-        input_file="test.txt",
-        additional_files=[],
     )
     print("id", data.id, flush=True)
     assert data.id is not None
@@ -17,25 +16,29 @@ def test_data_crud_operations(clean_database: None) -> None:
     assert retrieved is not None
     assert isinstance(retrieved, Data)
     assert retrieved.geode_object == "test_object"
-    assert retrieved.input_file == "test.txt"
     assert retrieved.id == data.id
     non_existent = Data.get("fake_id")
     assert non_existent is None
 
 
-def test_data_with_additional_files(clean_database: None) -> None:
-    files = ["file1.txt", "file2.txt"]
+def test_data_with_file_assignments(clean_database: None) -> None:
     data = Data.create(
-        geode_object="test_files",
-        viewer_object="test_viewer",
+        geode_object="geode_object",
+        viewer_object="viewer_object",
         viewer_elements_type="test_type",
-        additional_files=files,
     )
-    assert data.id is not None
-    assert isinstance(data.id, str)
+    data_id = data.id
+    data.native_file = "original.og_brep"
+    data.viewable_file = "viewable.vtm"
+    data.light_viewable_file = "light.vtp"
 
-    retrieved = Data.get(data.id)
+    with get_session() as session:
+        session.add(data)
+        session.commit()
+
+    retrieved = Data.get(data_id)
     assert retrieved is not None
-    assert isinstance(retrieved, Data)
-    assert retrieved.additional_files == files
-    assert retrieved.geode_object == "test_files"
+    assert retrieved.native_file == "original.og_brep"
+    assert retrieved.viewable_file == "viewable.vtm"
+    assert retrieved.light_viewable_file == "light.vtp"
+    assert retrieved.geode_object == "geode_object"
