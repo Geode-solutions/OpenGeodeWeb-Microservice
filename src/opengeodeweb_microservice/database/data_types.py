@@ -1,6 +1,5 @@
 from typing import Literal, get_args, cast
 
-
 GeodePointMeshType = Literal[
     "PointSet2D",
     "PointSet3D",
