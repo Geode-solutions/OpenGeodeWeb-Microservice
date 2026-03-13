@@ -34,7 +34,7 @@
     "build": "echo \"Error: no test specified\" && exit 0"
   },
   "dependencies": {
-    "glob": "^11.0.3",
-    "quicktype-core": "^23.2.6"
+    "glob": "11.0.3",
+    "quicktype-core": "23.2.6"
   }
 }
