@@ -60,7 +60,14 @@ function installDependecies(pythonExe) {
 
 function runPyInstaller(pythonExe) {
   console.log(`→ Running PyInstaller ...`);
-  const pyinstallerCommand = `PyInstaller ${projectPath}/*.spec --distpath ${process.cwd()} --clean`;
+  const specFiles = fs.readdirSync(projectPath, { withFileTypes: true })
+    .filter(file => file.isFile() && file.name.endsWith(".spec"))
+    .map(file => path.join(projectPath, file.name));
+  if (specFiles.length !== 1) {
+    console.error("Expected 1 spec file, found " + specFiles.length);
+    process.exit(1);
+  }
+  const pyinstallerCommand = `PyInstaller ${specFiles[0]} --distpath ${process.cwd()} --clean`;
   try {
     console.log(`→ Running: ${pythonExe} -m ${pyinstallerCommand}`);
     execSync(`${pythonExe} -m ${pyinstallerCommand}`, { stdio: "inherit" });
