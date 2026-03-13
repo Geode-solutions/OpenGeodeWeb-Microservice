@@ -2,38 +2,39 @@
   "name": "@geode/opengeodeweb-microservice",
   "version": "0.0.0",
   "description": "Shared utilities and schema generator for OpenGeodeWeb ecosystem",
-  "bin": {
-    "opengeodeweb-microservice-generate": "./generate_schemas.js"
+  "homepage": "https://github.com/Geode-solutions/OpenGeodeWeb-Microservice",
+  "bugs": {
+    "url": "https://github.com/Geode-solutions/OpenGeodeWeb-Microservice/issues"
   },
+  "license": "MIT",
+  "author": {
+    "name": "Geode-solutions",
+    "email": "contact@geode-solutions.com",
+    "url": "https://geode-solutions.com/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Geode-solutions/OpenGeodeWeb-Microservice.git"
+  },
+  "bin": {
+    "opengeodeweb-microservice-generate": "./generate_schemas.js",
+    "opengeodeweb-microservice-pyinstaller": "./generate_pyinstaller.js"
+  },
+  "files": [
+    "generate_schemas.js"
+  ],
+  "type": "module",
   "main": "generate_schemas.js",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "json": "echo \"Error: no test specified\" && exit 0",
     "test": "echo \"Error: no test specified\" && exit 0",
     "build": "echo \"Error: no test specified\" && exit 0"
   },
   "dependencies": {
-    "glob": "^11.0.3",
-    "quicktype-core": "^23.2.6"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Geode-solutions/OpenGeodeWeb-Microservice.git"
-  },
-  "author": {
-    "name": "Geode-solutions",
-    "email": "contact@geode-solutions.com",
-    "url": "https://geode-solutions.com/"
-  },
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/Geode-solutions/OpenGeodeWeb-Microservice/issues"
-  },
-  "homepage": "https://github.com/Geode-solutions/OpenGeodeWeb-Microservice",
-  "publishConfig": {
-    "access": "public"
-  },
-  "files": [
-    "generate_schemas.js"
-  ],
-  "type": "module"
+    "glob": "11.0.3",
+    "quicktype-core": "23.2.6"
+  }
 }
