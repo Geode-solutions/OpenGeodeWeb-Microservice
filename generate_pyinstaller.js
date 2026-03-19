@@ -44,6 +44,14 @@ function createVenv() {
   }
 }
 
+function deleteVenv() {
+  const venvPath = path.join(projectPath, "venv");
+  if (fs.existsSync(venvPath)) {
+    console.log(`→ Removing virtual environment → ${venvPath}`);
+    fs.rmSync(venvPath, { recursive: true, force: true });
+  }
+}
+
 function installDependecies(pythonExe) {
   console.log(`→ Installing dependencies ...`);
   const pipCommand = `pip install ${projectPath} pyinstaller`;
@@ -60,9 +68,10 @@ function installDependecies(pythonExe) {
 
 function runPyInstaller(pythonExe) {
   console.log(`→ Running PyInstaller ...`);
-  const specFiles = fs.readdirSync(projectPath, { withFileTypes: true })
-    .filter(file => file.isFile() && file.name.endsWith(".spec"))
-    .map(file => path.join(projectPath, file.name));
+  const specFiles = fs
+    .readdirSync(projectPath, { withFileTypes: true })
+    .filter((file) => file.isFile() && file.name.endsWith(".spec"))
+    .map((file) => path.join(projectPath, file.name));
   if (specFiles.length !== 1) {
     console.error("Expected 1 spec file, found " + specFiles.length);
     process.exit(1);
@@ -83,6 +92,7 @@ function main() {
   const pythonExe = createVenv();
   installDependecies(pythonExe);
   runPyInstaller(pythonExe);
+  deleteVenv();
 }
 
 main();
