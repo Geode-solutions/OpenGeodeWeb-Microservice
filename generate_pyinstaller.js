@@ -5,7 +5,9 @@ import path from "node:path";
 import { execSync } from "node:child_process";
 
 const projectPath = process.argv[2];
+const localPackagePath = process.argv[3];
 console.log("projectPath", projectPath);
+if (localPackagePath) { console.log("localPackagePath", localPackagePath); }
 
 function pythonCommand() {
   const candidates = ["python3", "python"];
@@ -54,7 +56,8 @@ function deleteVenv() {
 
 function installDependecies(pythonExe) {
   console.log(`→ Installing dependencies ...`);
-  const pipCommand = `pip install ${projectPath} pyinstaller`;
+
+  const pipCommand = `pip install "${projectPath}" pyinstaller`;
   try {
     console.log(`→ Running: ${pythonExe} -m ${pipCommand}`);
     execSync(`${pythonExe} -m ${pipCommand}`, { stdio: "inherit" });
@@ -63,6 +66,19 @@ function installDependecies(pythonExe) {
     console.error(err.message);
     process.exit(1);
   }
+
+  if (localPackagePath) {
+    const localPipCommand = `pip install "${localPackagePath}" --no-deps --force-reinstall`;
+    try {
+      console.log(`→ Running: ${pythonExe} -m ${localPipCommand}`);
+      execSync(`${pythonExe} -m ${localPipCommand}`, { stdio: "inherit" });
+    } catch (err) {
+      console.error("Failed to install local core package");
+      console.error(err.message);
+      process.exit(1);
+    }
+  }
+
   console.log("✅ Python virtual environment setup complete");
 }
 
