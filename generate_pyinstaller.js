@@ -56,8 +56,7 @@ function deleteVenv() {
 
 function installDependecies(pythonExe) {
   console.log(`→ Installing dependencies ...`);
-
-  const pipCommand = `pip install "${projectPath}" pyinstaller`;
+  const pipCommand = `pip install ${projectPath} pyinstaller`;
   try {
     console.log(`→ Running: ${pythonExe} -m ${pipCommand}`);
     execSync(`${pythonExe} -m ${pipCommand}`, { stdio: "inherit" });
