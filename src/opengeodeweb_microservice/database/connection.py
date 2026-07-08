@@ -33,5 +33,5 @@ def init_database(db_path: str = DATABASE_FILENAME, create_tables: bool = True) 
 
 def get_session() -> Session:
     if scoped_session_registry is None:
-        raise RuntimeError()
+        raise RuntimeError("Database not initialized. Call init_database() first.")
     return scoped_session_registry()
