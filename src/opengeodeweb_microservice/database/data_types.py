@@ -42,6 +42,7 @@ GeodeModelType = Literal[
     "CrossSection",
     "ImplicitStructuralModel",
     "ImplicitCrossSection",
+    "HorizonStack3D",
 ]
 GeodeObjectType = GeodeMeshType | GeodeModelType
 
