@@ -4,9 +4,11 @@
 import fs from "node:fs";
 import path from "node:path";
 import { parseArgs } from "node:util"
-import { glob } from "glob";
 import process from "node:process";
+
+// Third party imports
 import { quicktype, InputData, JSONSchemaInput, FetchingJSONSchemaStore } from "quicktype-core";
+import { glob } from "glob";
 
 const projectName = path.basename(process.cwd()).toLowerCase().replaceAll("-", "_");
 
