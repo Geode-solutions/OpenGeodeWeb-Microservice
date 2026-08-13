@@ -4,7 +4,7 @@
 #
 #    pip-compile --output-file=./requirements.txt ./requirements.in
 #
-dataclasses-json>=0
+dataclasses-json==0.6.7
     # via -r requirements.in
 fastjsonschema==2.21.1
     # via -r requirements.in
@@ -14,9 +14,9 @@ marshmallow>=3
     # via dataclasses-json
 mypy-extensions>=1
     # via typing-inspect
-packaging==26.3
+packaging>=26
     # via marshmallow
-sqlalchemy>=2
+sqlalchemy==2.0.43
     # via -r requirements.in
 typing-extensions>=4
     # via
