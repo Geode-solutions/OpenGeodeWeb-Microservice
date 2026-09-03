@@ -8,20 +8,20 @@ dataclasses-json==0.6.7
     # via -r requirements.in
 fastjsonschema==2.21.1
     # via -r requirements.in
-greenlet>=3
+greenlet==3.*, >=3.5.5
     # via sqlalchemy
-marshmallow>=3
+marshmallow==3.*, >=3.26.2
     # via dataclasses-json
-mypy-extensions>=1
+mypy-extensions==1.*, >=1.1.0
     # via typing-inspect
-packaging>=26
+packaging==26.*, >=26.3
     # via marshmallow
 sqlalchemy==2.0.43
     # via -r requirements.in
-typing-extensions>=4
+typing-extensions==4.*, >=4.16.0
     # via
     #   sqlalchemy
     #   typing-inspect
-typing-inspect>=0
+typing-inspect==0.*, >=0.9.0
     # via dataclasses-json
 
