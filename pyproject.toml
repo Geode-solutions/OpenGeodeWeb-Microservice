@@ -27,4 +27,4 @@ dependencies = { file = ["requirements.txt"] }
 where = ["src"]
 
 [tool.setuptools.package-data]
-opengeodeweb_microservice = ["py.typed"]
+opengeodeweb_microservice = ["py.typed", "error.json"]

@@ -21,7 +21,8 @@
     "opengeodeweb-microservice-pyinstaller": "./generate_pyinstaller.js"
   },
   "files": [
-    "generate_schemas.js"
+    "generate_schemas.js",
+    "src/opengeodeweb_microservice/error.json"
   ],
   "type": "module",
   "main": "generate_schemas.js",
