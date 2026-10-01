@@ -191,25 +191,43 @@ async function generatePythonFile(folderPath, filename, jsonData, fileContent) {
 
 // Every request/response JSON schema, fed to a single quicktype run so TS type names are unique
 const typescriptSources = [];
+const typescriptTypeNames = new Map();
 
-function registerTypescriptTypes(filename, jsonData, fileContent) {
-  const paramsSourceName = `${filename}_params`;
-  typescriptSources.push({
-    name: paramsSourceName,
-    schema: requestSchemaString(jsonData, fileContent),
-  });
-  let responseType = "unknown";
-  if (isBinaryResponse(jsonData)) {
-    responseType = "Blob";
-  } else if (RESPONSE_KEY in jsonData) {
-    const responseSourceName = `${filename}_response`;
-    typescriptSources.push({
-      name: responseSourceName,
-      schema: JSON.stringify(jsonData[RESPONSE_KEY]),
-    });
-    responseType = quicktypeName(responseSourceName);
+// Routes with the same file name in different folders (e.g. local/app/kill and local/extensions/kill) must not
+// share a type name: quicktype would silently rename one of them (KillParams1) behind the Schemas tree's back
+function registerTypescriptSource(sourceName, schema, filePath) {
+  const typeName = quicktypeName(sourceName);
+  if (typescriptTypeNames.has(typeName)) {
+    const error = new Error(
+      `${filePath}: TypeScript type ${typeName} already generated for ${typescriptTypeNames.get(typeName)}`,
+    );
+    error.fatal = true;
+    throw error;
   }
-  return { params: quicktypeName(paramsSourceName), response: responseType };
+  typescriptTypeNames.set(typeName, filePath);
+  typescriptSources.push({ name: sourceName, schema });
+  return typeName;
+}
+
+function registerTypescriptTypes(folder_path, filename, filePath, jsonData, fileContent) {
+  // Root routes keep their plain name (AllowedFilesParams), nested ones get their folders (LocalAppKillParams)
+  const sourceName = [...folder_path.split("/"), filename].filter((part) => part).join("_");
+  const params = registerTypescriptSource(
+    `${sourceName}_params`,
+    requestSchemaString(jsonData, fileContent),
+    filePath,
+  );
+  let response = "unknown";
+  if (isBinaryResponse(jsonData)) {
+    response = "Blob";
+  } else if (RESPONSE_KEY in jsonData) {
+    response = registerTypescriptSource(
+      `${sourceName}_response`,
+      JSON.stringify(jsonData[RESPONSE_KEY]),
+      filePath,
+    );
+  }
+  return { params, response };
 }
 
 async function return_json_schema(directoryPath, folder_path, prefix) {
@@ -263,13 +281,22 @@ async function return_json_schema(directoryPath, folder_path, prefix) {
             })
             .join(separator);
           schemas[filename] = jsonData;
-          folders_types[filename] = registerTypescriptTypes(filename, jsonData, fileContent);
+          folders_types[filename] = registerTypescriptTypes(
+            folder_path,
+            filename,
+            filePath,
+            jsonData,
+            fileContent,
+          );
 
           if (generatePython) {
             initContent += "from ." + filename + " import *\n";
             await generatePythonFile(folder.path, filename, jsonData, fileContent);
           }
         } catch (error) {
+          if (error.fatal) {
+            throw error;
+          }
           console.error(`Erreur lors de la lecture du fichier ${filePath}:`, error);
         }
       }
