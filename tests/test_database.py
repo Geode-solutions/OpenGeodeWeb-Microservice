@@ -1,9 +1,14 @@
+from sqlalchemy import select
+
 from opengeodeweb_microservice.database.data import Data
 from opengeodeweb_microservice.database.connection import get_session
+
+GEODE_ID = "01a08187-2c4c-7e64-85c5-52c3439f0626"
 
 
 def test_data_crud_operations(clean_database: None) -> None:
     data = Data.create(
+        geode_id=GEODE_ID,
         geode_object="test_object",
         viewer_object="test_viewer",
         viewer_elements_type="test_type",
@@ -11,11 +16,13 @@ def test_data_crud_operations(clean_database: None) -> None:
     print("id", data.id, flush=True)
     assert data.id is not None
     assert isinstance(data.id, str)
+    assert len(data.id) == 32
 
     retrieved = Data.get(data.id)
     assert retrieved is not None
     assert isinstance(retrieved, Data)
     assert retrieved.geode_object == "test_object"
+    assert retrieved.geode_id == GEODE_ID
     assert retrieved.id == data.id
     non_existent = Data.get("fake_id")
     assert non_existent is None
@@ -23,6 +30,7 @@ def test_data_crud_operations(clean_database: None) -> None:
 
 def test_data_with_file_assignments(clean_database: None) -> None:
     data = Data.create(
+        geode_id=GEODE_ID,
         geode_object="geode_object",
         viewer_object="viewer_object",
         viewer_elements_type="test_type",
@@ -42,3 +50,22 @@ def test_data_with_file_assignments(clean_database: None) -> None:
     assert retrieved.viewable_file == "viewable.vtm"
     assert retrieved.light_viewable_file == "light.vtp"
     assert retrieved.geode_object == "geode_object"
+
+
+def test_data_geode_id_is_not_unique(clean_database: None) -> None:
+    first = Data.create(
+        geode_id=GEODE_ID,
+        geode_object="geode_object",
+        viewer_object="viewer_object",
+        viewer_elements_type="test_type",
+    )
+    second = Data.create(
+        geode_id=GEODE_ID,
+        geode_object="geode_object",
+        viewer_object="viewer_object",
+        viewer_elements_type="test_type",
+    )
+    assert first.id != second.id
+    session = get_session()
+    rows = session.scalars(select(Data).where(Data.geode_id == GEODE_ID)).all()
+    assert {row.id for row in rows} == {first.id, second.id}
