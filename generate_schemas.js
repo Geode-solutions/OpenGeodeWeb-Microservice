@@ -3,7 +3,7 @@
 // Node imports
 import fs from "node:fs";
 import path from "node:path";
-import { parseArgs } from "node:util"
+import { parseArgs } from "node:util";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 
@@ -123,7 +123,8 @@ async function appendPythonResponse(filename, jsonData, requestContent) {
   const exportedNames = [...pythonClassNames(requestContent)];
   let pythonContent = requestContent;
   let responseClass = "BinaryResponse";
-  let schemasImport = "from opengeodeweb_microservice.schemas import BinaryResponse, Route, load_schema";
+  let schemasImport =
+    "from opengeodeweb_microservice.schemas import BinaryResponse, Route, load_schema";
   if (!isBinaryResponse(jsonData)) {
     responseClass = quicktypeName(`${filename}_response`);
     schemasImport = "from opengeodeweb_microservice.schemas import Route, load_schema";
@@ -148,7 +149,10 @@ async function appendPythonResponse(filename, jsonData, requestContent) {
     const newImports = responseLines.filter(
       (line) => isImport(line) && !pythonContent.split("\n").includes(line),
     );
-    const responseBody = responseLines.filter((line) => !isImport(line)).join("\n").trim();
+    const responseBody = responseLines
+      .filter((line) => !isImport(line))
+      .join("\n")
+      .trim();
     pythonContent = [...newImports, pythonContent.trimEnd(), "", "", responseBody].join("\n");
     exportedNames.push(responseClass);
   }
@@ -231,7 +235,6 @@ function registerTypescriptTypes(folder_path, filename, filePath, jsonData, file
 }
 
 async function return_json_schema(directoryPath, folder_path, prefix) {
-
   const folders = fs
     .readdirSync(path.normalize(directoryPath), { withFileTypes: true })
     .filter((folder) => folder.isDirectory() && folder.name != "__pycache__")
@@ -359,6 +362,7 @@ async function generateTypescript(typesTree) {
   ];
   const { lines: tsTypes } = await quicktypeJSONSchema(sources, "typescript", {
     "just-types": true,
+    "prefer-unions": true,
   });
   assertGeneratedTypes(
     tsTypes.join("\n"),
