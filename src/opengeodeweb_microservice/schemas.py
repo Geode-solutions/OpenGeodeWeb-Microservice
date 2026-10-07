@@ -31,7 +31,9 @@ def _format_value(value: object, max_length: int) -> str:
     return f"{text[:max_length]}... ({details})"
 
 
-def format_dataclass(instance: "DataclassInstance", max_length: int = MAX_VALUE_LENGTH) -> str:
+def format_dataclass(
+    instance: "DataclassInstance", max_length: int = MAX_VALUE_LENGTH
+) -> str:
     """Like repr(), but truncate every field value longer than max_length.
 
     Each truncated value is followed by its type and length.

@@ -13,7 +13,11 @@ from opengeodeweb_microservice.schemas import (
 def test_error_response_matches_error_schema() -> None:
     with ERROR_SCHEMA_PATH.open() as file:
         validate = fastjsonschema.compile(json.load(file))
-    validate(ErrorResponse(code=500, name="Internal Server Error", description="boom").to_dict())
+    validate(
+        ErrorResponse(
+            code=500, name="Internal Server Error", description="boom"
+        ).to_dict()
+    )
 
 
 @dataclass
@@ -33,5 +37,7 @@ def test_format_dataclass_truncates_long_values() -> None:
         _Outer(name="short", content="x" * 1000, inner=_Inner(values=list(range(500)))),
         max_length=20,
     )
-    assert text.startswith("_Outer(name='short', content='xxxxxxxxxxxxxxxxxxx... (str, len=1000)")
+    assert text.startswith(
+        "_Outer(name='short', content='xxxxxxxxxxxxxxxxxxx... (str, len=1000)"
+    )
     assert "inner=_Inner(values=[0, 1, 2, 3, 4, 5, 6... (list, len=500))" in text

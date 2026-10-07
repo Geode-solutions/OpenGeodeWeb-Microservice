@@ -28,7 +28,9 @@ class _DatabaseState:
 _state = _DatabaseState()
 
 
-def init_database(db_path: Path = DATABASE_FILENAME, *, create_tables: bool = True) -> None:
+def init_database(
+    db_path: Path = DATABASE_FILENAME, *, create_tables: bool = True
+) -> None:
     if _state.engine is not None:
         logger.info("Database engine already exists for %s, reusing", db_path)
         return
