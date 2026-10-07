@@ -164,11 +164,12 @@ async function appendPythonResponse(filename, jsonData, requestContent) {
   const routeName = `${filename}_route`;
   exportedNames.push(routeName);
   return (
+    "from pathlib import Path\n" +
     schemasImport +
     "\n" +
     pythonContent.trimEnd() +
     `\n\n\n${routeName} = Route(\n` +
-    `    schema=load_schema(__file__),\n` +
+    `    schema=load_schema(Path(__file__)),\n` +
     `    params=${paramsClass},\n` +
     `    response=${responseClass},\n` +
     `)\n\n` +

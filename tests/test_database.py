@@ -1,19 +1,20 @@
+import pytest
 from sqlalchemy import select
 
-from opengeodeweb_microservice.database.data import Data
 from opengeodeweb_microservice.database.connection import get_session
+from opengeodeweb_microservice.database.data import Data
 
 GEODE_ID = "01a08187-2c4c-7e64-85c5-52c3439f0626"
 
 
-def test_data_crud_operations(clean_database: None) -> None:
+@pytest.mark.usefixtures("clean_database")
+def test_data_crud_operations() -> None:
     data = Data.create(
         geode_id=GEODE_ID,
         geode_object="test_object",
         viewer_object="test_viewer",
         viewer_elements_type="test_type",
     )
-    print("id", data.id, flush=True)
     assert data.id is not None
     assert isinstance(data.id, str)
     assert len(data.id) == 32
@@ -28,7 +29,8 @@ def test_data_crud_operations(clean_database: None) -> None:
     assert non_existent is None
 
 
-def test_data_with_file_assignments(clean_database: None) -> None:
+@pytest.mark.usefixtures("clean_database")
+def test_data_with_file_assignments() -> None:
     data = Data.create(
         geode_id=GEODE_ID,
         geode_object="geode_object",
@@ -52,7 +54,8 @@ def test_data_with_file_assignments(clean_database: None) -> None:
     assert retrieved.geode_object == "geode_object"
 
 
-def test_data_geode_id_is_not_unique(clean_database: None) -> None:
+@pytest.mark.usefixtures("clean_database")
+def test_data_geode_id_is_not_unique() -> None:
     first = Data.create(
         geode_id=GEODE_ID,
         geode_object="geode_object",
