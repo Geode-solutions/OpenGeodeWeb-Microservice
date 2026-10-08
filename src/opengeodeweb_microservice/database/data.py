@@ -1,9 +1,11 @@
-from sqlalchemy import String, JSON, select
-from sqlalchemy.orm import Mapped, mapped_column
-from .connection import get_session
-from .base import Base
-from .data_types import GeodeObjectType, ViewerType, ViewerElementsType
 import uuid
+
+from sqlalchemy import String, select
+from sqlalchemy.orm import Mapped, mapped_column
+
+from .base import Base
+from .connection import get_session
+from .data_types import GeodeObjectType, ViewerElementsType, ViewerType
 
 
 class Data(Base):
@@ -15,9 +17,7 @@ class Data(Base):
     geode_id: Mapped[str] = mapped_column(String, nullable=False)
     geode_object: Mapped[GeodeObjectType] = mapped_column(String, nullable=False)
     viewer_object: Mapped[ViewerType] = mapped_column(String, nullable=False)
-    viewer_elements_type: Mapped[ViewerElementsType] = mapped_column(
-        String, nullable=False
-    )
+    viewer_elements_type: Mapped[ViewerElementsType] = mapped_column(String, nullable=False)
     native_file: Mapped[str | None] = mapped_column(String, nullable=True)
     viewable_file: Mapped[str | None] = mapped_column(String, nullable=True)
     light_viewable_file: Mapped[str | None] = mapped_column(String, nullable=True)

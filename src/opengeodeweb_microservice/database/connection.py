@@ -1,37 +1,62 @@
 """Database connection management"""
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, scoped_session, Session
+import logging
+from dataclasses import dataclass
+from pathlib import Path
+
+from sqlalchemy import Engine, create_engine
+from sqlalchemy.orm import Session, scoped_session, sessionmaker
+
 from .base import Base
 
-DATABASE_FILENAME = "project.db"
+DATABASE_FILENAME = Path("project.db")
 
-engine = None
-session_factory = None
-scoped_session_registry = None
+logger = logging.getLogger(__name__)
 
 
-def init_database(db_path: str = DATABASE_FILENAME, create_tables: bool = True) -> None:
-    global engine, session_factory, scoped_session_registry
+class DatabaseNotInitializedError(RuntimeError):
+    def __init__(self) -> None:
+        super().__init__("Database not initialized. Call init_database() first.")
 
-    if engine is None:
-        engine = create_engine(
-            f"sqlite:///{db_path}",
-            connect_args={"check_same_thread": False},
-        )
-        print(f"Database engine created for {db_path}", flush=True)
-        session_factory = sessionmaker(bind=engine)
-        scoped_session_registry = scoped_session(session_factory)
-        if create_tables:
-            Base.metadata.create_all(engine)
-            print(f"Database tables created for {db_path}", flush=True)
-        else:
-            print(f"Database connected (tables not created) for {db_path}", flush=True)
+
+@dataclass
+class _DatabaseState:
+    engine: Engine | None = None
+    scoped_session_registry: scoped_session[Session] | None = None
+
+
+_state = _DatabaseState()
+
+
+def init_database(db_path: Path = DATABASE_FILENAME, *, create_tables: bool = True) -> None:
+    if _state.engine is not None:
+        logger.info("Database engine already exists for %s, reusing", db_path)
+        return
+
+    _state.engine = create_engine(
+        f"sqlite:///{db_path}",
+        connect_args={"check_same_thread": False},
+    )
+    logger.info("Database engine created for %s", db_path)
+    _state.scoped_session_registry = scoped_session(sessionmaker(bind=_state.engine))
+    if create_tables:
+        Base.metadata.create_all(_state.engine)
+        logger.info("Database tables created for %s", db_path)
     else:
-        print(f"Database engine already exists for {db_path}, reusing", flush=True)
+        logger.info("Database connected (tables not created) for %s", db_path)
+
+
+def close_database() -> None:
+    """Release every session and connection so the database file can be replaced."""
+    if _state.scoped_session_registry is not None:
+        _state.scoped_session_registry.remove()
+    if _state.engine is not None:
+        _state.engine.dispose()
+    _state.engine = None
+    _state.scoped_session_registry = None
 
 
 def get_session() -> Session:
-    if scoped_session_registry is None:
-        raise RuntimeError("Database not initialized. Call init_database() first.")
-    return scoped_session_registry()
+    if _state.scoped_session_registry is None:
+        raise DatabaseNotInitializedError
+    return _state.scoped_session_registry()

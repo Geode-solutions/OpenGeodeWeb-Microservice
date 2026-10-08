@@ -1,10 +1,17 @@
-import os
-from typing import Generator
+import contextlib
+from collections.abc import Generator
+from pathlib import Path
+
 import pytest
-from opengeodeweb_microservice.database.connection import init_database, get_session
+
+from opengeodeweb_microservice.database.connection import (
+    close_database,
+    get_session,
+    init_database,
+)
 from opengeodeweb_microservice.database.data import Data
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "test_project.db")
+DB_PATH = Path(__file__).parent / "test_project.db"
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -14,28 +21,16 @@ def setup_database() -> Generator[None, None, None]:
     _cleanup_database(DB_PATH)
 
 
-def _cleanup_database(db_path: str) -> None:
-    try:
-        session = get_session()
-        session.close()
-    except Exception:
-        pass
-
-    if os.path.exists(db_path):
-        try:
-            os.remove(db_path)
-        except PermissionError:
-            pass
+def _cleanup_database(db_path: Path) -> None:
+    close_database()
+    with contextlib.suppress(PermissionError):
+        db_path.unlink(missing_ok=True)
 
 
 @pytest.fixture(autouse=True)
 def clean_database() -> Generator[None, None, None]:
     with get_session() as session:
-        session = get_session()
         session.query(Data).delete()
         session.commit()
         yield
-        try:
-            session.rollback()
-        except Exception:
-            pass
+        session.rollback()

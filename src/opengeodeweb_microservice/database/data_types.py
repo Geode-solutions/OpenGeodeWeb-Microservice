@@ -1,4 +1,4 @@
-from typing import Literal, get_args, cast
+from typing import Literal, cast, get_args
 
 GeodePointMeshType = Literal[
     "PointSet2D",
@@ -60,12 +60,17 @@ def _flatten_literal_args(literal: object) -> tuple[str, ...]:
 GeodeObjectType_values = _flatten_literal_args(GeodeObjectType)
 
 
-def geode_object_type(value: str) -> GeodeObjectType:
-    if value not in GeodeObjectType_values:
-        raise ValueError(
+class InvalidGeodeObjectTypeError(ValueError):
+    def __init__(self, value: str) -> None:
+        super().__init__(
             f"Invalid GeodeObjectType: {value!r}. Must be one of {GeodeObjectType_values}"
         )
-    return cast(GeodeObjectType, value)
+
+
+def geode_object_type(value: str) -> GeodeObjectType:
+    if value not in GeodeObjectType_values:
+        raise InvalidGeodeObjectTypeError(value)
+    return cast("GeodeObjectType", value)
 
 
 ViewerType = Literal["mesh", "model"]
