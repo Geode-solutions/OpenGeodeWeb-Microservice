@@ -15,7 +15,7 @@ class Data(Base):
         String, primary_key=True, default=lambda: str(uuid.uuid4()).replace("-", "")
     )
     geode_id: Mapped[str] = mapped_column(String, nullable=False)
-    geode_object: Mapped[GeodeObjectType] = mapped_column(String, nullable=False)
+    geode_object_type: Mapped[GeodeObjectType] = mapped_column(String, nullable=False)
     viewer_object_type: Mapped[ViewerObjectType] = mapped_column(String, nullable=False)
     viewer_elements_type: Mapped[ViewerElementsType] = mapped_column(String, nullable=False)
     native_file: Mapped[str | None] = mapped_column(String, nullable=True)
@@ -25,13 +25,13 @@ class Data(Base):
     @staticmethod
     def create(
         geode_id: str,
-        geode_object: GeodeObjectType,
+        geode_object_type: GeodeObjectType,
         viewer_object_type: ViewerObjectType,
         viewer_elements_type: ViewerElementsType,
     ) -> "Data":
         data_entry = Data(
             geode_id=geode_id,
-            geode_object=geode_object,
+            geode_object_type=geode_object_type,
             viewer_object_type=viewer_object_type,
             viewer_elements_type=viewer_elements_type,
         )
