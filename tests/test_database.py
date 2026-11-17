@@ -12,7 +12,7 @@ def test_data_crud_operations() -> None:
     data = Data.create(
         geode_id=GEODE_ID,
         geode_object="test_object",
-        viewer_object="test_viewer",
+        viewer_object_type="mesh",
         viewer_elements_type="test_type",
     )
     assert data.id is not None
@@ -34,7 +34,7 @@ def test_data_with_file_assignments() -> None:
     data = Data.create(
         geode_id=GEODE_ID,
         geode_object="geode_object",
-        viewer_object="viewer_object",
+        viewer_object_type="mesh",
         viewer_elements_type="test_type",
     )
     data_id = data.id
@@ -59,13 +59,13 @@ def test_data_geode_id_is_not_unique() -> None:
     first = Data.create(
         geode_id=GEODE_ID,
         geode_object="geode_object",
-        viewer_object="viewer_object",
+        viewer_object_type="mesh",
         viewer_elements_type="test_type",
     )
     second = Data.create(
         geode_id=GEODE_ID,
         geode_object="geode_object",
-        viewer_object="viewer_object",
+        viewer_object_type="mesh",
         viewer_elements_type="test_type",
     )
     assert first.id != second.id
