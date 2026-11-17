@@ -1,6 +1,6 @@
 import contextlib
-from collections.abc import Generator
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
 
@@ -11,11 +11,14 @@ from opengeodeweb_microservice.database.connection import (
 )
 from opengeodeweb_microservice.database.data import Data
 
+if TYPE_CHECKING:
+    from collections.abc import Generator
+
 DB_PATH = Path(__file__).parent / "test_project.db"
 
 
 @pytest.fixture(scope="session", autouse=True)
-def setup_database() -> Generator[None, None, None]:
+def setup_database() -> Generator[None]:
     init_database(DB_PATH)
     yield
     _cleanup_database(DB_PATH)
@@ -28,7 +31,7 @@ def _cleanup_database(db_path: Path) -> None:
 
 
 @pytest.fixture(autouse=True)
-def clean_database() -> Generator[None, None, None]:
+def clean_database() -> Generator[None]:
     with get_session() as session:
         session.query(Data).delete()
         session.commit()

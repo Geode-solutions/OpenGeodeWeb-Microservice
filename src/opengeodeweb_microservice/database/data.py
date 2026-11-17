@@ -5,7 +5,13 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from .base import Base
 from .connection import get_session
-from .data_types import GeodeObjectType, ViewerElementsType, ViewerObjectType
+
+# SQLAlchemy resolves the Mapped[...] annotations at runtime: these types must be imported
+from .data_types import (  # noqa: TC001
+    GeodeObjectType,
+    ViewerElementsType,
+    ViewerObjectType,
+)
 
 
 class Data(Base):
@@ -28,7 +34,7 @@ class Data(Base):
         geode_object_type: GeodeObjectType,
         viewer_object_type: ViewerObjectType,
         viewer_elements_type: ViewerElementsType,
-    ) -> "Data":
+    ) -> Data:
         data_entry = Data(
             geode_id=geode_id,
             geode_object_type=geode_object_type,
@@ -42,7 +48,7 @@ class Data(Base):
         return data_entry
 
     @staticmethod
-    def get(data_id: str) -> "Data | None":
+    def get(data_id: str) -> Data | None:
         session = get_session()
         data_query = select(Data).where(Data.id == data_id)
         return session.scalars(data_query).first()
