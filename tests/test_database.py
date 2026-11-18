@@ -11,8 +11,8 @@ GEODE_ID = "01a08187-2c4c-7e64-85c5-52c3439f0626"
 def test_data_crud_operations() -> None:
     data = Data.create(
         geode_id=GEODE_ID,
-        geode_object="test_object",
-        viewer_object="test_viewer",
+        geode_object_type="BRep",
+        viewer_object_type="model",
         viewer_elements_type="test_type",
     )
     assert data.id is not None
@@ -22,7 +22,7 @@ def test_data_crud_operations() -> None:
     retrieved = Data.get(data.id)
     assert retrieved is not None
     assert isinstance(retrieved, Data)
-    assert retrieved.geode_object == "test_object"
+    assert retrieved.geode_object_type == "BRep"
     assert retrieved.geode_id == GEODE_ID
     assert retrieved.id == data.id
     non_existent = Data.get("fake_id")
@@ -33,8 +33,8 @@ def test_data_crud_operations() -> None:
 def test_data_with_file_assignments() -> None:
     data = Data.create(
         geode_id=GEODE_ID,
-        geode_object="geode_object",
-        viewer_object="viewer_object",
+        geode_object_type="BRep",
+        viewer_object_type="model",
         viewer_elements_type="test_type",
     )
     data_id = data.id
@@ -51,21 +51,21 @@ def test_data_with_file_assignments() -> None:
     assert retrieved.native_file == "native.og_brep"
     assert retrieved.viewable_file == "viewable.vtm"
     assert retrieved.light_viewable_file == "light.vtp"
-    assert retrieved.geode_object == "geode_object"
+    assert retrieved.geode_object_type == "BRep"
 
 
 @pytest.mark.usefixtures("clean_database")
 def test_data_geode_id_is_not_unique() -> None:
     first = Data.create(
         geode_id=GEODE_ID,
-        geode_object="geode_object",
-        viewer_object="viewer_object",
+        geode_object_type="BRep",
+        viewer_object_type="model",
         viewer_elements_type="test_type",
     )
     second = Data.create(
         geode_id=GEODE_ID,
-        geode_object="geode_object",
-        viewer_object="viewer_object",
+        geode_object_type="BRep",
+        viewer_object_type="model",
         viewer_elements_type="test_type",
     )
     assert first.id != second.id
