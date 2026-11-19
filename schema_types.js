@@ -148,6 +148,24 @@ const enumKeys = Object.entries(dataTypes).map(([name, values]) => ({
     .join(" | "),
 }));
 
+// Quicktype aligns the types of the fields of an interface: the fields of a body, aligned again
+function alignFields(body) {
+  const fields = [...body.matchAll(/^ {4}(\w+\??:) +/gm)].map(([, field]) => field);
+  const width = Math.max(...fields.map((field) => field.length)) + 1;
+  return body.replaceAll(/^ {4}(\w+\??:) +/gm, (_match, field) => `    ${field.padEnd(width)}`);
+}
+
+// Quicktype documents a field with a block comment above it: a one line description goes at the end of its line
+function inlineFieldComments(content) {
+  return content.replaceAll(/^(export interface .*\{\n)([^}]*)\}/gm, (block, header, body) => {
+    const inlined = body.replaceAll(
+      /^( +)\/\*\*\n\1 \* (.+)\n\1 \*\/\n\1(.+;)$/gm,
+      (_match, indent, comment, field) => `${indent}${field} // ${comment}`,
+    );
+    return inlined === body ? block : `${header}${alignFields(inlined)}}`;
+  });
+}
+
 // The schema types seen by the package of a directory
 function loadSchemaTypes(packageDir) {
   const layers = schemaTypesLayers(packageDir);
@@ -536,4 +554,4 @@ function loadSchemaTypes(packageDir) {
   };
 }
 
-export { loadSchemaTypes };
+export { inlineFieldComments, loadSchemaTypes };
