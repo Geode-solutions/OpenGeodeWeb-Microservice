@@ -1,4 +1,6 @@
+import copy
 import dataclasses
+import functools
 import json
 import sys
 from collections.abc import Sized
@@ -14,6 +16,8 @@ if TYPE_CHECKING:
 type SchemaDict = dict[str, str]
 
 ERROR_SCHEMA_PATH = Path(__file__).parent / "error.json"
+# Generated in each package by generate_schemas.js, see schema_types.js
+SCHEMA_DEFINITIONS_FILENAME = "schema_definitions.json"
 
 
 MAX_VALUE_LENGTH = 80
@@ -48,19 +52,49 @@ def print_dataclass(instance: DataclassInstance) -> None:
     sys.stdout.flush()
 
 
+@functools.cache
+def schema_definitions(directory: Path) -> dict[str, dict[str, Any]]:
+    """Definitions of the shared schema types for the schemas of a directory.
+
+    Read from the schema_definitions.json generated in its package, by the closest parent directory.
+    """
+    for parent in (directory, *directory.parents):
+        definitions_file = parent / SCHEMA_DEFINITIONS_FILENAME
+        if definitions_file.is_file():
+            with definitions_file.open() as file:
+                definitions: dict[str, dict[str, Any]] = json.load(file)
+            return definitions
+    return {}
+
+
+def resolve_schema_types(schema: object, definitions: dict[str, dict[str, Any]]) -> object:
+    """Give every schema titled after a shared type (e.g. {"title": "ColorRGBA"}) its definition."""
+    if isinstance(schema, list):
+        return [resolve_schema_types(item, definitions) for item in schema]
+    if not isinstance(schema, dict):
+        return schema
+    title = schema.get("title")
+    if isinstance(title, str) and title in definitions:
+        return {**schema, **copy.deepcopy(definitions[title])}
+    return {key: resolve_schema_types(value, definitions) for key, value in schema.items()}
+
+
+def _read_schema(json_file: Path) -> dict[str, Any]:
+    with json_file.open() as file:
+        schema = resolve_schema_types(json.load(file), schema_definitions(json_file.parent))
+    if not isinstance(schema, dict):
+        message = f"{json_file}: a schema must be a JSON object"
+        raise TypeError(message)
+    return schema
+
+
 def get_schemas_dict(path: Path) -> dict[str, SchemaDict]:
-    schemas_dict: dict[str, SchemaDict] = {}
-    for json_file in path.glob("*.json"):
-        with json_file.open() as file:
-            schemas_dict[json_file.stem] = json.load(file)
-    return schemas_dict
+    return {json_file.stem: _read_schema(json_file) for json_file in path.glob("*.json")}
 
 
 def load_schema(python_file: Path) -> dict[str, Any]:
     """Load the JSON route schema sitting next to a generated schema module."""
-    with python_file.with_suffix(".json").open() as file:
-        schema: dict[str, Any] = json.load(file)
-    return schema
+    return _read_schema(python_file.with_suffix(".json"))
 
 
 @dataclass(frozen=True)
