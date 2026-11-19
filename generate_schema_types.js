@@ -80,8 +80,36 @@ function compareAllNames(nameA, nameB) {
   return nameA < nameB ? -1 : 1;
 }
 
+const PYTHON_SCALARS = { boolean: "bool", integer: "int", number: "float", string: "str" };
+const TYPESCRIPT_SCALARS = {
+  boolean: "boolean",
+  integer: "number",
+  number: "number",
+  string: "string",
+};
+
+// The type a non object type (e.g. DataId) is an alias of, in the language of the scalars
+function aliasedType(definition, scalars, arrayOf) {
+  if (definition.type === "array") {
+    return arrayOf(aliasedType(definition.items, scalars, arrayOf));
+  }
+  if (!(definition.type in scalars)) {
+    throw new Error(`No alias for a schema type of type ${definition.type}`);
+  }
+  return scalars[definition.type];
+}
+
+// The aliases of the non object types of a package (e.g. DataId = str), declared before its classes
+function aliases(names, schemaTypes, declaration, scalars, arrayOf) {
+  return names
+    .map((name) =>
+      declaration(name, aliasedType(schemaTypes.resolvedDefinitions[name], scalars, arrayOf)),
+    )
+    .join("\n");
+}
+
 // A module of the package: written the way its linter wants it (builtin generics, sorted imports and __all__)
-function pythonModule(classes, sharedImports, layer, names) {
+function pythonModule(classes, aliasDeclarations, sharedImports, layer, names) {
   const typingNames = (/^from typing import (.*)$/m.exec(classes)?.[1] ?? "")
     .split(", ")
     .filter((name) => name && name !== "List");
@@ -112,6 +140,7 @@ function pythonModule(classes, sharedImports, layer, names) {
     "",
     importBlocks.join("\n\n"),
     "",
+    ...(aliasDeclarations ? [aliasDeclarations, ""] : []),
     "",
     body,
     "",
@@ -127,6 +156,7 @@ function pythonModule(classes, sharedImports, layer, names) {
 async function generateSchemaTypes(schemaTypes) {
   const layer = schemaTypes.ownLayer;
   const names = schemaTypes.objectTypeNames(layer);
+  const aliasNames = Object.keys(layer.types).filter((name) => !names.includes(name));
   const dependencyLayers = schemaTypes.layers.filter((other) => other !== layer);
   const { useSharedPythonTypes, useSharedTypescriptTypes } =
     schemaTypes.sharedTypes(dependencyLayers);
@@ -151,7 +181,17 @@ async function generateSchemaTypes(schemaTypes) {
   const sharedImports = [...pythonContent.matchAll(/^from (\S+) import .*$/gm)]
     .filter(([, module]) => !STANDARD_MODULES.has(module))
     .map(([line]) => line);
-  fs.writeFileSync(layer.pythonFile, pythonModule(pythonContent, sharedImports, layer, names));
+  const pythonAliases = aliases(
+    aliasNames,
+    schemaTypes,
+    (name, type) => `${name} = ${type}`,
+    PYTHON_SCALARS,
+    (type) => `list[${type}]`,
+  );
+  fs.writeFileSync(
+    layer.pythonFile,
+    pythonModule(pythonContent, pythonAliases, sharedImports, layer, [...aliasNames, ...names]),
+  );
 
   const typescript = await generate(names, schemaTypes.resolvedDefinitions, "typescript", {
     "just-types": true,
@@ -167,8 +207,16 @@ async function generateSchemaTypes(schemaTypes) {
       (name, baseName, ownBody) => `export interface ${name} extends ${baseName} {\n${ownBody}}`,
     ),
   );
-  fs.writeFileSync(layer.typescriptFile, `// ${HEADER}\n\n${interfaces.trim()}\n`);
-  console.log(`Generated ${names.join(", ")} in ${layer.pythonFile} and ${layer.typescriptFile}`);
+  const typescriptAliases = aliases(
+    aliasNames,
+    schemaTypes,
+    (name, type) => `export type ${name} = ${type};`,
+    TYPESCRIPT_SCALARS,
+    (type) => `${type}[]`,
+  );
+  const declarations = [typescriptAliases, interfaces.trim()].filter(Boolean).join("\n\n");
+  fs.writeFileSync(layer.typescriptFile, `// ${HEADER}\n\n${declarations}\n`);
+  console.log(`Generated ${[...aliasNames, ...names].join(", ")} in ${layer.pythonFile} and ${layer.typescriptFile}`);
 }
 
 export { generateSchemaTypes };

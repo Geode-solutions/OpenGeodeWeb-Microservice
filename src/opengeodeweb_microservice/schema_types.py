@@ -6,6 +6,12 @@ from dataclasses_json import DataClassJsonMixin
 
 from opengeodeweb_microservice.schemas import print_dataclass
 
+DataId = str
+GeodeId = str
+ViewerId = int
+AttributeName = str
+Filename = str
+
 
 @dataclass
 class Point3D(DataClassJsonMixin):
@@ -18,5 +24,10 @@ class Point3D(DataClassJsonMixin):
 
 
 __all__ = [
+    "AttributeName",
+    "DataId",
+    "Filename",
+    "GeodeId",
     "Point3D",
+    "ViewerId",
 ]
