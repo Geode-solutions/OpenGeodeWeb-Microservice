@@ -67,6 +67,10 @@ const RESPONSE_KEY = "response";
 
 // The schema types of the project and of its dependencies (see schema_types.js)
 const schemaTypes = loadSchemaTypes(process.cwd());
+// The shared types, as quicktype names their classes (e.g. DataID for DataId)
+const sharedClassNames = new Set(
+  [...schemaTypes.sharedTypeNames].flatMap((name) => [name, quicktypeName(name)]),
+);
 // Replacement of the generated declarations of the schema types, set once the project generated its own ones
 let sharedTypes;
 // Whether a schema of the project uses a shared type: its Python package then needs their definitions
@@ -151,7 +155,7 @@ async function appendPythonResponse(filename, jsonData, requestContent) {
     const requestClasses = new Set(exportedNames);
     // The shared types are imported, not declared by the module
     const duplicates = pythonClassNames(responseContent).filter(
-      (name) => requestClasses.has(name) && !schemaTypes.sharedTypeNames.has(name),
+      (name) => requestClasses.has(name) && !sharedClassNames.has(name),
     );
     if (duplicates.length > 0) {
       throw new Error(
@@ -291,7 +295,9 @@ async function return_json_schema(directoryPath, folder_path, prefix) {
         }
         usedSchemaTypes = schemaTypes.usesSchemaTypes(sourceData) || usedSchemaTypes;
         var jsonData = schemaTypes.resolveSchemaTypes(sourceData);
-        const fileContent = JSON.stringify(jsonData);
+        // What quicktype generates the code from: the aliases (e.g. DataId) stand for their own type
+        const typedData = schemaTypes.aliasPlaceholders(jsonData);
+        const typedContent = JSON.stringify(typedData);
         var filename = filePath.replace(/^.*[\\/]/, "").replace(/\.[^/.]+$/, "");
         try {
           var route = jsonData[key];
@@ -312,13 +318,13 @@ async function return_json_schema(directoryPath, folder_path, prefix) {
             folder_path,
             filename,
             filePath,
-            jsonData,
-            fileContent,
+            typedData,
+            typedContent,
           );
 
           if (generatePython) {
             initContent += "from ." + filename + " import *\n";
-            await generatePythonFile(folder.path, filename, jsonData, fileContent);
+            await generatePythonFile(folder.path, filename, typedData, typedContent);
           }
         } catch (error) {
           if (error.fatal) {

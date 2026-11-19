@@ -19,10 +19,11 @@ const PYTHON_CLASS_REPLACEMENT =
 const PRINT_DATACLASS_IMPORT = "from opengeodeweb_microservice.schemas import print_dataclass";
 const STANDARD_MODULES = new Set(["dataclasses", "enum", "typing"]);
 
-async function generate(names, resolvedDefinitions, lang, rendererOptions) {
+async function generate(names, schemaTypes, lang, rendererOptions) {
   const schemaInput = new JSONSchemaInput(new FetchingJSONSchemaStore());
   for (const name of names) {
-    await schemaInput.addSource({ name, schema: JSON.stringify(resolvedDefinitions[name]) });
+    const schema = schemaTypes.aliasPlaceholders(schemaTypes.resolvedDefinitions[name]);
+    await schemaInput.addSource({ name, schema: JSON.stringify(schema) });
   }
   const inputData = new InputData();
   inputData.addInput(schemaInput);
@@ -108,6 +109,18 @@ function aliases(names, schemaTypes, declaration, scalars, arrayOf) {
     .join("\n");
 }
 
+const MAX_LINE_LENGTH = 100;
+
+// An import line as ruff formats it: one name per line when it is too long
+function formattedImport(line) {
+  if (line.length <= MAX_LINE_LENGTH) {
+    return line;
+  }
+  const [, module, names] = /^from (\S+) import (.*)$/.exec(line);
+  const lines = names.split(", ").map((name) => `    ${name},`);
+  return [`from ${module} import (`, ...lines, ")"].join("\n");
+}
+
 // A module of the package: written the way its linter wants it (builtin generics, sorted imports and __all__)
 function pythonModule(classes, aliasDeclarations, sharedImports, layer, names) {
   const typingNames = (/^from typing import (.*)$/m.exec(classes)?.[1] ?? "")
@@ -134,10 +147,18 @@ function pythonModule(classes, aliasDeclarations, sharedImports, layer, names) {
     .toSorted((lineA, lineB) => (moduleOf(lineA) < moduleOf(lineB) ? -1 : 1));
   const importBlocks = [standardImports, thirdPartyImports, firstPartyImports]
     .filter((block) => block.length > 0)
-    .map((block) => block.join("\n"));
+    .map((block) => block.map((line) => formattedImport(line)).join("\n"));
+  // Dataclasses_json resolves the annotations at runtime: the imported shared types must stay runtime imports
+  // (TC001 for the first party ones, TC002 for the third party ones)
+  const rules = [
+    ...(sharedImports.some((line) => isFirstParty(line)) ? ["TC001"] : []),
+    ...(sharedImports.some((line) => !isFirstParty(line)) ? ["TC002"] : []),
+  ];
+  const noqa = rules.length > 0 ? [`# ruff: noqa: ${rules.join(", ")}`, ""] : [];
   return [
     `"""${HEADER}"""`,
     "",
+    ...noqa,
     importBlocks.join("\n\n"),
     "",
     ...(aliasDeclarations ? [aliasDeclarations, ""] : []),
@@ -158,11 +179,13 @@ async function generateSchemaTypes(schemaTypes) {
   const names = schemaTypes.objectTypeNames(layer);
   const aliasNames = Object.keys(layer.types).filter((name) => !names.includes(name));
   const dependencyLayers = schemaTypes.layers.filter((other) => other !== layer);
-  const { useSharedPythonTypes, useSharedTypescriptTypes } =
-    schemaTypes.sharedTypes(dependencyLayers);
+  const { useSharedPythonTypes, useSharedTypescriptTypes } = schemaTypes.sharedTypes(
+    dependencyLayers,
+    layer,
+  );
 
   const python = (
-    await generate(names, schemaTypes.resolvedDefinitions, "python", {
+    await generate(names, schemaTypes, "python", {
       "just-types": true,
       "python-version": "3.7",
     })
@@ -193,7 +216,7 @@ async function generateSchemaTypes(schemaTypes) {
     pythonModule(pythonContent, pythonAliases, sharedImports, layer, [...aliasNames, ...names]),
   );
 
-  const typescript = await generate(names, schemaTypes.resolvedDefinitions, "typescript", {
+  const typescript = await generate(names, schemaTypes, "typescript", {
     "just-types": true,
     "prefer-unions": true,
   });
@@ -216,7 +239,9 @@ async function generateSchemaTypes(schemaTypes) {
   );
   const declarations = [typescriptAliases, interfaces.trim()].filter(Boolean).join("\n\n");
   fs.writeFileSync(layer.typescriptFile, `// ${HEADER}\n\n${declarations}\n`);
-  console.log(`Generated ${[...aliasNames, ...names].join(", ")} in ${layer.pythonFile} and ${layer.typescriptFile}`);
+  console.log(
+    `Generated ${[...aliasNames, ...names].join(", ")} in ${layer.pythonFile} and ${layer.typescriptFile}`,
+  );
 }
 
 export { generateSchemaTypes };

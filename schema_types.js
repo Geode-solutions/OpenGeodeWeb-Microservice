@@ -17,6 +17,8 @@ const dataTypes = readJson(
 
 const ENUM_TYPES_TS_MODULE = "@geode/opengeodeweb-microservice/data_types";
 const ENUM_TYPES_PYTHON_MODULE = "opengeodeweb_microservice.database.data_types";
+// The value of the one value enum standing for an alias in the schemas given to quicktype (see aliasPlaceholders)
+const ALIAS_PLACEHOLDER = "__schema_type__";
 // Only the packages of this scope define schema types
 const SCHEMA_TYPES_SCOPE = "@geode/";
 
@@ -89,7 +91,8 @@ const INTERFACE_PATTERN = /^export interface (\w+) \{\n([^}]*)\}\n\n?/gm;
 const UNION_PATTERN = /^export type (\w+) =([^;]*);\n\n?/gm;
 // The shared interfaces may extend another one (see the "extends" of schema_types.json)
 const SHARED_INTERFACE_PATTERN = /^export interface (\w+)(?: extends (\w+))? \{\n([^}]*)\}\n\n?/gm;
-const PYTHON_ENUM_PATTERN = /^class (\w+)\(Enum\):\n((?: {4}.*\n)+)\n*/gm;
+// The body of an Enum can hold its docstring, followed by a blank line
+const PYTHON_ENUM_PATTERN = /^class (\w+)\(Enum\):\n((?:(?: {4}.*)?\n)+)/gm;
 const PYTHON_DATACLASS_PATTERN =
   /^@dataclass\nclass (\w+)\(DataClassJsonMixin\):\n((?:(?:[ \t].*)?\n)*)/gm;
 // The shared dataclasses may extend another one (see the "extends" of schema_types.json)
@@ -312,9 +315,53 @@ function loadSchemaTypes(packageDir) {
     return [...bodies].map(([name, { layer }]) => ({ name, layer, key: keyOf(fullBody(name)) }));
   }
 
-  // Replacement of the declarations matching the shared types of some packages (by default all of them) by imports
-  function sharedTypes(sourceLayers = layers) {
+  // The non object types (e.g. DataId), generated as aliases: the generated code names them instead of their type
+  const aliasLayers = new Map(
+    layers.flatMap((layer) =>
+      Object.keys(layer.types)
+        .filter((name) => resolvedDefinitions[name].type !== "object")
+        .map((name) => [name, layer]),
+    ),
+  );
+
+  // A copy of a resolved schema for quicktype, where each schema titled after an alias is a one value enum: quicktype
+  // Declares a type for it, replaced by the alias (see sharedTypes)
+  function aliasPlaceholders(schema) {
+    if (Array.isArray(schema)) {
+      return schema.map((item) => aliasPlaceholders(item));
+    }
+    if (!isObject(schema)) {
+      return schema;
+    }
+    if (aliasLayers.has(schema.title)) {
+      const description =
+        schema.description === undefined ? {} : { description: schema.description };
+      // Its own title: quicktype names its type after it, never like a type of the module (e.g. the Visibility params)
+      return {
+        title: `SchemaType${schema.title}`,
+        ...description,
+        type: "string",
+        enum: [`${ALIAS_PLACEHOLDER}${schema.title}`],
+      };
+    }
+    return Object.fromEntries(
+      Object.entries(schema).map(([key, value]) => [key, aliasPlaceholders(value)]),
+    );
+  }
+
+  // Replacement of the declarations matching the shared types of some packages (by default all of them) by imports.
+  // The aliases of localLayer, whose code is being generated, are only renamed
+  function sharedTypes(sourceLayers = layers, localLayer = undefined) {
+    function aliasKeys(moduleOf) {
+      return [...aliasLayers]
+        .filter(([, layer]) => sourceLayers.includes(layer) || layer === localLayer)
+        .map(([name, layer]) => [
+          JSON.stringify(`${ALIAS_PLACEHOLDER}${name}`),
+          { name, module: layer === localLayer ? undefined : moduleOf(layer) },
+        ]);
+    }
     // The shared TypeScript types, by the key of their declaration
+    const typescriptAliasKeys = new Map(aliasKeys((layer) => layer.typescriptModule));
     const typescriptKeys = new Map([
       ...enumKeys.map(({ name }) => [
         unionKey(dataTypes[name].map((value) => JSON.stringify(value)).join(" | ")),
@@ -327,7 +374,8 @@ function loadSchemaTypes(packageDir) {
         interfaceKey,
       ).map(({ name, layer, key }) => [key, { name, module: layer.typescriptModule }]),
     ]);
-    // The shared Python types, by name: the key of their declaration
+    // The shared Python types: the aliases by the key of their placeholder enum, the other ones by name
+    const pythonAliasKeys = new Map(aliasKeys((layer) => layer.pythonModule));
     const pythonKeys = new Map([
       ...enumKeys.map(({ name, key }) => [name, { key, module: ENUM_TYPES_PYTHON_MODULE }]),
       ...inheritedKeys(
@@ -338,11 +386,39 @@ function loadSchemaTypes(packageDir) {
       ).map(({ name, layer, key }) => [name, { key, module: layer.pythonModule }]),
     ]);
 
-    // Quicktype declares its own type for each use of a shared type, named after its path when it is used by
-    // Several routes: replace every declaration matching a shared type by an import of it
-    function useSharedTypescriptTypes(content) {
-      const replaced = new Map();
-      const declarations = [
+    // Removes the declarations of the shared types (each shared one of its declarations), renaming their uses
+    function replaceDeclarations(content, declarations, sharedOf, used) {
+      let result = content;
+      const renamed = new Map();
+      for (const declaration of declarations) {
+        const shared = sharedOf(declaration);
+        if (shared !== undefined) {
+          renamed.set(declaration.name, shared.name);
+          used.push(shared);
+          result = result.replace(declaration.declaration, "");
+        }
+      }
+      for (const [name, sharedName] of renamed) {
+        if (name !== sharedName) {
+          result = result.replaceAll(new RegExp(`\\b${escapeRegExp(name)}\\b`, "g"), sharedName);
+        }
+      }
+      return result;
+    }
+
+    // The import lines of the used shared types, one per module
+    function importLines(used, line) {
+      const imports = Map.groupBy(
+        used.filter(({ module }) => module !== undefined),
+        ({ module }) => module,
+      );
+      return [...imports].map(([module, types]) =>
+        line(module, [...new Set(types.map(({ name, imported }) => imported ?? name))].toSorted()),
+      );
+    }
+
+    function typescriptDeclarations(content) {
+      return [
         ...[...content.matchAll(INTERFACE_PATTERN)].map(([declaration, name, body]) => ({
           declaration,
           name,
@@ -354,63 +430,90 @@ function loadSchemaTypes(packageDir) {
           key: unionKey(union),
         })),
       ];
-      let result = content;
-      for (const { declaration, name, key } of declarations) {
-        const shared = typescriptKeys.get(key);
-        if (shared !== undefined) {
-          replaced.set(name, shared);
-          result = result.replace(declaration, "");
-        }
-      }
-      if (replaced.size === 0) {
-        return content;
-      }
-      for (const [name, { name: sharedName }] of replaced) {
-        result = result.replaceAll(new RegExp(`\\b${escapeRegExp(name)}\\b`, "g"), sharedName);
-      }
-      const imports = Map.groupBy(replaced.values(), ({ module }) => module);
-      const importLines = [...imports].map(([module, types]) => {
-        const names = [...new Set(types.map(({ name }) => name))].toSorted();
-        return `import type { ${names.join(", ")} } from "${module}";\n`;
-      });
-      return `${importLines.join("")}\n${result}`;
+    }
+
+    // Quicktype declares its own type for each use of a shared type, named after its path when it is used by
+    // Several routes: replace every declaration matching a shared type by an import of it. The aliases first, as
+    // The shared interfaces use them
+    function useSharedTypescriptTypes(content) {
+      const used = [];
+      const withAliases = replaceDeclarations(
+        content,
+        typescriptDeclarations(content),
+        ({ key }) => typescriptAliasKeys.get(key),
+        used,
+      );
+      const result = replaceDeclarations(
+        withAliases,
+        typescriptDeclarations(withAliases),
+        ({ key }) => typescriptKeys.get(key),
+        used,
+      );
+      const lines = importLines(
+        used,
+        (module, names) => `import type { ${names.join(", ")} } from "${module}";\n`,
+      );
+      return lines.length === 0 ? result : `${lines.join("")}\n${result}`;
     }
 
     // Quicktype declares its own Enum or dataclass for each shared type, named after its title: import the shared
     // One instead when it is the same type (the enums are Literal types, so the values stay plain strings)
     function useSharedPythonTypes(content) {
-      const used = new Map();
-      let result = content;
-      const declarations = [
-        ...[...content.matchAll(PYTHON_ENUM_PATTERN)].map(([declaration, name, body]) => ({
+      const used = [];
+      const enums = (text) =>
+        [...text.matchAll(PYTHON_ENUM_PATTERN)].map(([declaration, name, body]) => ({
           declaration,
           name,
           key: enumKey(body),
-        })),
-        ...[...content.matchAll(PYTHON_DATACLASS_PATTERN)].map(([declaration, name, body]) => ({
-          declaration,
-          name,
-          key: dataclassKey(body),
-        })),
-      ];
-      for (const { declaration, name, key } of declarations) {
+        }));
+      // A module declaring a class named after an alias (e.g. the Visibility params of visibility.py) imports it as
+      // VisibilityType
+      const classNames = new Set([...content.matchAll(/^class (\w+)\(/gm)].map(([, name]) => name));
+      const withAliases = replaceDeclarations(
+        content,
+        enums(content),
+        ({ key }) => {
+          const shared = pythonAliasKeys.get(key);
+          if (shared === undefined || !classNames.has(shared.name)) {
+            return shared;
+          }
+          const renamed = `${shared.name}Type`;
+          return { ...shared, name: renamed, imported: `${shared.name} as ${renamed}` };
+        },
+        used,
+      );
+      const sameType = ({ name, key }) => {
         const shared = pythonKeys.get(name);
-        if (shared !== undefined && shared.key === key) {
-          used.set(name, shared.module);
-          result = result.replace(declaration, "");
-        }
-      }
-      if (used.size === 0) {
+        return shared !== undefined && shared.key === key
+          ? { name, module: shared.module }
+          : undefined;
+      };
+      let result = replaceDeclarations(
+        withAliases,
+        [
+          ...enums(withAliases),
+          ...[...withAliases.matchAll(PYTHON_DATACLASS_PATTERN)].map(
+            ([declaration, name, body]) => ({
+              declaration,
+              name,
+              key: dataclassKey(body),
+            }),
+          ),
+        ],
+        sameType,
+        used,
+      );
+      if (used.length === 0) {
         return content;
       }
       if (!/\(Enum\):/.test(result)) {
         result = result.replace(/^from enum import Enum\n/m, "");
       }
-      const imports = Map.groupBy(used.keys(), (name) => used.get(name));
-      const importLines = [...imports].map(
-        ([module, names]) => `from ${module} import ${names.toSorted().join(", ")}\n`,
+      const lines = importLines(
+        used,
+        (module, names) => `from ${module} import ${names.join(", ")}\n`,
       );
-      return `${importLines.join("")}${result}`;
+      return `${lines.join("")}${result}`;
     }
 
     return { useSharedPythonTypes, useSharedTypescriptTypes };
@@ -422,11 +525,9 @@ function loadSchemaTypes(packageDir) {
     objectTypeNames,
     ownLayer,
     resolvedDefinitions,
-    sharedTypeNames: new Set(
-      Object.keys(resolvedDefinitions).filter(
-        (name) => name in dataTypes || resolvedDefinitions[name].type === "object",
-      ),
-    ),
+    aliasPlaceholders,
+    // The types the generated code imports instead of declaring them
+    sharedTypeNames: new Set(Object.keys(resolvedDefinitions)),
     resolveSchemaTypes,
     sharedTypes,
     stubSchemaTypes,
