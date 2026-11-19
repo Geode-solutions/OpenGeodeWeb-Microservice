@@ -93,10 +93,17 @@ const TYPESCRIPT_SCALARS = {
   string: "string",
 };
 
-// The type a non object type (e.g. DataId) is an alias of, in the language of the scalars
-function aliasedType(definition, scalars, arrayOf) {
+// The type a non object type (e.g. DataId) is an alias of, in the language of the scalars. The other aliases of the
+// Package it uses keep their name (BlockIds = list[ViewerId]), the other types are resolved
+function aliasedType(definition, context) {
+  const { arrayOf, names, resolvedDefinitions, scalars } = context;
+  if (definition.title !== undefined) {
+    return names.includes(definition.title)
+      ? definition.title
+      : aliasedType(resolvedDefinitions[definition.title], context);
+  }
   if (definition.type === "array") {
-    return arrayOf(aliasedType(definition.items, scalars, arrayOf));
+    return arrayOf(aliasedType(definition.items, context));
   }
   if (!(definition.type in scalars)) {
     throw new Error(`No alias for a schema type of type ${definition.type}`);
@@ -104,13 +111,33 @@ function aliasedType(definition, scalars, arrayOf) {
   return scalars[definition.type];
 }
 
-// The aliases of the non object types of a package (e.g. DataId = str), declared before its classes
+// The aliases of a package an alias uses
+function usedAliases(definition, names) {
+  if (definition.title !== undefined) {
+    return names.includes(definition.title) ? [definition.title] : [];
+  }
+  return definition.type === "array" ? usedAliases(definition.items, names) : [];
+}
+
+// The aliases of the non object types of a package (e.g. DataId = str), declared before its classes, each one after
+// The aliases it uses
 function aliases(names, schemaTypes, declaration, scalars, arrayOf) {
-  return names
-    .map((name) =>
-      declaration(name, aliasedType(schemaTypes.resolvedDefinitions[name], scalars, arrayOf)),
-    )
-    .join("\n");
+  const { types } = schemaTypes.ownLayer;
+  const context = { arrayOf, names, resolvedDefinitions: schemaTypes.resolvedDefinitions, scalars };
+  const ordered = [];
+  function declare(name) {
+    if (ordered.includes(name)) {
+      return;
+    }
+    for (const used of usedAliases(types[name], names)) {
+      declare(used);
+    }
+    ordered.push(name);
+  }
+  for (const name of names) {
+    declare(name);
+  }
+  return ordered.map((name) => declaration(name, aliasedType(types[name], context))).join("\n");
 }
 
 const MAX_LINE_LENGTH = 100;
