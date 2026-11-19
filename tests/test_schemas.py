@@ -45,30 +45,30 @@ def test_format_dataclass_truncates_long_values() -> None:
 
 
 def test_load_schema_resolves_the_shared_types(tmp_path: Path) -> None:
-    color = {"type": "object", "properties": {"red": {"type": "integer"}}, "required": ["red"]}
-    (tmp_path / SCHEMA_DEFINITIONS_FILENAME).write_text(json.dumps({"ColorRGB": color}))
+    point = {"type": "object", "properties": {"x": {"type": "number"}}, "required": ["x"]}
+    (tmp_path / SCHEMA_DEFINITIONS_FILENAME).write_text(json.dumps({"Point3D": point}))
     schemas_dir = tmp_path / "routes" / "schemas"
     schemas_dir.mkdir(parents=True)
     route = {
-        "route": "color",
+        "route": "points",
         "type": "object",
         "properties": {
-            "color": {"title": "ColorRGB", "description": "Of the background"},
-            "colors": {"type": "array", "items": {"title": "ColorRGB"}},
+            "point": {"title": "Point3D", "description": "Of the origin"},
+            "points": {"type": "array", "items": {"title": "Point3D"}},
             "other": {"title": "Other", "type": "string"},
         },
     }
-    (schemas_dir / "color.json").write_text(json.dumps(route))
+    (schemas_dir / "points.json").write_text(json.dumps(route))
 
-    schema = load_schema(schemas_dir / "color.py")
+    schema = load_schema(schemas_dir / "points.py")
 
     properties = schema["properties"]
-    assert properties["color"] == {"title": "ColorRGB", "description": "Of the background", **color}
-    assert properties["colors"]["items"] == {"title": "ColorRGB", **color}
+    assert properties["point"] == {"title": "Point3D", "description": "Of the origin", **point}
+    assert properties["points"]["items"] == {"title": "Point3D", **point}
     assert properties["other"] == {"title": "Other", "type": "string"}
-    assert get_schemas_dict(schemas_dir) == {"color": schema}
+    assert get_schemas_dict(schemas_dir) == {"points": schema}
     validate = fastjsonschema.compile(schema)
-    validate({"color": {"red": 1}, "colors": [], "other": "x"})
+    validate({"point": {"x": 1}, "points": [], "other": "x"})
 
 
 def test_load_schema_without_definitions(tmp_path: Path) -> None:

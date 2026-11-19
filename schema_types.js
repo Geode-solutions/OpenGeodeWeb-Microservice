@@ -1,7 +1,7 @@
 // Shared types of the JSON schemas of the microservices: the Literal types of data_types.py (as enums) and the
-// Schemas of the schema_types.json of each package, defined by the lowest package using them (e.g. CRS by
-// OpenGeodeWeb-Back, ColorRGBA by OpenGeodeWeb-Viewer, GeodeId by OpenGeodeWeb-Microservice as both use it).
-// A schema titled after one of them only names it ({"title": "ColorRGBA"}): the generated files get its definition
+// Schemas of the schema_types.json of each package, defined by the lowest package using them (e.g. GeodeId here, as
+// Both OpenGeodeWeb-Back and OpenGeodeWeb-Viewer use it).
+// A schema titled after one of them only names it ({"title": "GeodeId"}): the generated files get its definition
 // (schema_definitions.json for the Python package at runtime), and the code generated from it uses the shared type
 
 // Node imports

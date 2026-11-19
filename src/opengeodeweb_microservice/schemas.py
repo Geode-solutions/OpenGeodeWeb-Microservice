@@ -68,7 +68,7 @@ def schema_definitions(directory: Path) -> dict[str, dict[str, Any]]:
 
 
 def resolve_schema_types(schema: object, definitions: dict[str, dict[str, Any]]) -> object:
-    """Give every schema titled after a shared type (e.g. {"title": "ColorRGBA"}) its definition."""
+    """Give every schema titled after a shared type (e.g. {"title": "Point3D"}) its definition."""
     if isinstance(schema, list):
         return [resolve_schema_types(item, definitions) for item in schema]
     if not isinstance(schema, dict):
