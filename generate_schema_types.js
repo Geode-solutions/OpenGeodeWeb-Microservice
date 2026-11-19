@@ -20,6 +20,10 @@ const PRINT_DATACLASS_IMPORT = "from opengeodeweb_microservice.schemas import pr
 const STANDARD_MODULES = new Set(["dataclasses", "enum", "typing"]);
 
 async function generate(names, schemaTypes, lang, rendererOptions) {
+  // A package may only define aliases
+  if (names.length === 0) {
+    return "";
+  }
   const schemaInput = new JSONSchemaInput(new FetchingJSONSchemaStore());
   for (const name of names) {
     const schema = schemaTypes.aliasPlaceholders(schemaTypes.resolvedDefinitions[name]);
@@ -71,7 +75,7 @@ function moduleOf(importLine) {
   return /^from (\S+) import/.exec(importLine)[1];
 }
 
-// Ruff's isort-style order: SCREAMING_CASE names (e.g. CRS) first
+// Ruff's isort-style order: SCREAMING_CASE names first
 function compareAllNames(nameA, nameB) {
   const upperA = nameA === nameA.toUpperCase();
   const upperB = nameB === nameB.toUpperCase();
@@ -130,16 +134,18 @@ function pythonModule(classes, aliasDeclarations, sharedImports, layer, names) {
     .replaceAll(/^(?:from|import) .*\n/gm, "")
     .replaceAll(/\bList\[/g, "list[")
     .trim();
+  // The imports of the dataclasses, when the package defines some
+  const hasClasses = body.length > 0;
   const standardImports = [
-    "from dataclasses import dataclass",
+    ...(hasClasses ? ["from dataclasses import dataclass"] : []),
     ...(/\(Enum\):/.test(classes) ? ["from enum import Enum"] : []),
     ...(typingNames.length > 0 ? [`from typing import ${typingNames.join(", ")}`] : []),
   ];
   // The modules of the package itself are first party, the other ones third party
   const isFirstParty = (line) => moduleOf(line).startsWith(`${layer.pythonPackage}.`);
-  const otherImports = [PRINT_DATACLASS_IMPORT, ...sharedImports];
+  const otherImports = [...(hasClasses ? [PRINT_DATACLASS_IMPORT] : []), ...sharedImports];
   const thirdPartyImports = [
-    "from dataclasses_json import DataClassJsonMixin",
+    ...(hasClasses ? ["from dataclasses_json import DataClassJsonMixin"] : []),
     ...otherImports.filter((line) => !isFirstParty(line)),
   ].toSorted((lineA, lineB) => (moduleOf(lineA) < moduleOf(lineB) ? -1 : 1));
   const firstPartyImports = otherImports
@@ -155,15 +161,16 @@ function pythonModule(classes, aliasDeclarations, sharedImports, layer, names) {
     ...(sharedImports.some((line) => !isFirstParty(line)) ? ["TC002"] : []),
   ];
   const noqa = rules.length > 0 ? [`# ruff: noqa: ${rules.join(", ")}`, ""] : [];
+  // The imports and the aliases, separated by a blank line, then the classes after two
+  const head = [
+    ...(importBlocks.length > 0 ? [importBlocks.join("\n\n")] : []),
+    ...(aliasDeclarations ? [aliasDeclarations] : []),
+  ].join("\n\n");
   return [
     `"""${HEADER}"""`,
     "",
     ...noqa,
-    importBlocks.join("\n\n"),
-    "",
-    ...(aliasDeclarations ? [aliasDeclarations, ""] : []),
-    "",
-    body,
+    [head, ...(hasClasses ? [body] : [])].filter(Boolean).join("\n\n\n"),
     "",
     "",
     "__all__ = [",

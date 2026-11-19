@@ -45,30 +45,30 @@ def test_format_dataclass_truncates_long_values() -> None:
 
 
 def test_load_schema_resolves_the_shared_types(tmp_path: Path) -> None:
-    point = {"type": "object", "properties": {"x": {"type": "number"}}, "required": ["x"]}
-    (tmp_path / SCHEMA_DEFINITIONS_FILENAME).write_text(json.dumps({"Point3D": point}))
+    geode_id = {"type": "string", "minLength": 36, "maxLength": 36}
+    (tmp_path / SCHEMA_DEFINITIONS_FILENAME).write_text(json.dumps({"GeodeId": geode_id}))
     schemas_dir = tmp_path / "routes" / "schemas"
     schemas_dir.mkdir(parents=True)
     route = {
-        "route": "points",
+        "route": "components",
         "type": "object",
         "properties": {
-            "point": {"title": "Point3D", "description": "Of the origin"},
-            "points": {"type": "array", "items": {"title": "Point3D"}},
+            "geode_id": {"title": "GeodeId", "description": "Of the model"},
+            "component_ids": {"type": "array", "items": {"title": "GeodeId"}},
             "other": {"title": "Other", "type": "string"},
         },
     }
-    (schemas_dir / "points.json").write_text(json.dumps(route))
+    (schemas_dir / "components.json").write_text(json.dumps(route))
 
-    schema = load_schema(schemas_dir / "points.py")
+    schema = load_schema(schemas_dir / "components.py")
 
     properties = schema["properties"]
-    assert properties["point"] == {"title": "Point3D", "description": "Of the origin", **point}
-    assert properties["points"]["items"] == {"title": "Point3D", **point}
+    assert properties["geode_id"] == {"title": "GeodeId", "description": "Of the model", **geode_id}
+    assert properties["component_ids"]["items"] == {"title": "GeodeId", **geode_id}
     assert properties["other"] == {"title": "Other", "type": "string"}
-    assert get_schemas_dict(schemas_dir) == {"points": schema}
+    assert get_schemas_dict(schemas_dir) == {"components": schema}
     validate = fastjsonschema.compile(schema)
-    validate({"point": {"x": 1}, "points": [], "other": "x"})
+    validate({"geode_id": "0" * 36, "component_ids": [], "other": "x"})
 
 
 def test_load_schema_without_definitions(tmp_path: Path) -> None:

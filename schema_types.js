@@ -174,9 +174,19 @@ function loadSchemaTypes(packageDir) {
   const definedBy = new Map(Object.keys(dataTypes).map((name) => [name, undefined]));
   for (const layer of layers) {
     for (const name of Object.keys(layer.types)) {
+      // Packages not depending on each other may define the same type (e.g. ViewerId, by OpenGeodeWeb-Back and
+      // OpenGeodeWeb-Viewer): a package depending on both sees them as one, the same definition
+      const other = definedBy.get(name);
+      if (
+        other !== undefined &&
+        JSON.stringify(other.types[name]) === JSON.stringify(layer.types[name])
+      ) {
+        continue;
+      }
       if (definedBy.has(name)) {
-        const other = definedBy.get(name)?.name ?? "data_types.py";
-        throw new Error(`${layer.jsonFile}: ${name} is already defined by ${other}`);
+        throw new Error(
+          `${layer.jsonFile}: ${name} is already defined differently by ${other?.name ?? "data_types.py"}`,
+        );
       }
       definedBy.set(name, layer);
     }

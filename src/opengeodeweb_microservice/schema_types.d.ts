@@ -2,12 +2,3 @@
 
 export type DataId = string;
 export type GeodeId = string;
-export type ViewerId = number;
-export type AttributeName = string;
-export type Filename = string;
-
-export interface Point3D {
-    x: number;
-    y: number;
-    z: number;
-}
