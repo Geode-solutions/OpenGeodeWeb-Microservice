@@ -1,0 +1,39 @@
+{
+  "DataId": {
+    "type": "string",
+    "minLength": 32,
+    "maxLength": 32
+  },
+  "GeodeId": {
+    "type": "string",
+    "minLength": 36,
+    "maxLength": 36
+  },
+  "ViewerId": {
+    "type": "integer"
+  },
+  "AttributeName": {
+    "type": "string",
+    "minLength": 1
+  },
+  "Filename": {
+    "type": "string",
+    "minLength": 1
+  },
+  "Point3D": {
+    "type": "object",
+    "properties": {
+      "x": {
+        "type": "number"
+      },
+      "y": {
+        "type": "number"
+      },
+      "z": {
+        "type": "number"
+      }
+    },
+    "required": ["x", "y", "z"],
+    "additionalProperties": false
+  }
+}

@@ -22,15 +22,31 @@
   },
   "files": [
     "generate_schemas.js",
-    "src/opengeodeweb_microservice/error.json"
+    "generate_schema_types.js",
+    "schema_types.js",
+    "src/opengeodeweb_microservice/error.json",
+    "src/opengeodeweb_microservice/database/data_types.d.ts",
+    "src/opengeodeweb_microservice/database/data_types.json",
+    "src/opengeodeweb_microservice/schema_types.json",
+    "src/opengeodeweb_microservice/schema_types.d.ts",
+    "src/opengeodeweb_microservice/schema_types.py"
   ],
   "type": "module",
   "main": "generate_schemas.js",
+  "exports": {
+    ".": "./generate_schemas.js",
+    "./data_types": {
+      "types": "./src/opengeodeweb_microservice/database/data_types.d.ts"
+    },
+    "./schema_types": {
+      "types": "./src/opengeodeweb_microservice/schema_types.d.ts"
+    }
+  },
   "publishConfig": {
     "access": "public"
   },
   "scripts": {
-    "json": "echo \"Error: no test specified\" && exit 0",
+    "json": "python3 generate_data_types.py && node generate_schema_types.js",
     "test": "echo \"Error: no test specified\" && exit 0",
     "build": "echo \"Error: no test specified\" && exit 0"
   },
