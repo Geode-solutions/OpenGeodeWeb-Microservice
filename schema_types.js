@@ -434,14 +434,23 @@ function loadSchemaTypes(packageDir) {
     ]);
 
     // Removes the declarations of the shared types (each shared one of its declarations), renaming their uses
-    function replaceDeclarations(content, declarations, sharedOf, used) {
+    // The kept names stay declared, as aliases of their shared type (e.g. a response that is a Point3D)
+    function replaceDeclarations(content, declarations, sharedOf, used, keptNames = new Set()) {
       let result = content;
       const renamed = new Map();
       for (const declaration of declarations) {
         const shared = sharedOf(declaration);
-        if (shared !== undefined) {
+        if (shared === undefined) {
+          continue;
+        }
+        used.push(shared);
+        if (keptNames.has(declaration.name)) {
+          result = result.replace(
+            declaration.declaration,
+            `export type ${declaration.name} = ${shared.name};\n\n`,
+          );
+        } else {
           renamed.set(declaration.name, shared.name);
-          used.push(shared);
           result = result.replace(declaration.declaration, "");
         }
       }
@@ -481,20 +490,23 @@ function loadSchemaTypes(packageDir) {
 
     // Quicktype declares its own type for each use of a shared type, named after its path when it is used by
     // Several routes: replace every declaration matching a shared type by an import of it. The aliases first, as
-    // The shared interfaces use them
-    function useSharedTypescriptTypes(content) {
+    // The shared interfaces use them. The kept names (e.g. the params and responses of the routes, referenced
+    // Elsewhere) stay declared as aliases of their shared type
+    function useSharedTypescriptTypes(content, keptNames = new Set()) {
       const used = [];
       const withAliases = replaceDeclarations(
         content,
         typescriptDeclarations(content),
         ({ key }) => typescriptAliasKeys.get(key),
         used,
+        keptNames,
       );
       const result = replaceDeclarations(
         withAliases,
         typescriptDeclarations(withAliases),
         ({ key }) => typescriptKeys.get(key),
         used,
+        keptNames,
       );
       const lines = importLines(
         used,
