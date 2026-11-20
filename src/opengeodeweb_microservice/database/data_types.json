@@ -1,0 +1,96 @@
+{
+  "GeodePointMeshType": [
+    "PointSet2D",
+    "PointSet3D"
+  ],
+  "GeodeEdgeMeshType": [
+    "EdgedCurve2D",
+    "EdgedCurve3D"
+  ],
+  "GeodePolygonMeshType": [
+    "RasterImage2D",
+    "PolygonalSurface2D",
+    "PolygonalSurface3D",
+    "TriangulatedSurface2D",
+    "TriangulatedSurface3D",
+    "RegularGrid2D",
+    "LightRegularGrid2D"
+  ],
+  "GeodePolyhedronMeshType": [
+    "RasterImage3D",
+    "PolyhedralSolid3D",
+    "TetrahedralSolid3D",
+    "HybridSolid3D",
+    "RegularGrid3D",
+    "LightRegularGrid3D"
+  ],
+  "GeodeMeshType": [
+    "VertexSet",
+    "Graph",
+    "PointSet2D",
+    "PointSet3D",
+    "EdgedCurve2D",
+    "EdgedCurve3D",
+    "RasterImage2D",
+    "PolygonalSurface2D",
+    "PolygonalSurface3D",
+    "TriangulatedSurface2D",
+    "TriangulatedSurface3D",
+    "RegularGrid2D",
+    "LightRegularGrid2D",
+    "RasterImage3D",
+    "PolyhedralSolid3D",
+    "TetrahedralSolid3D",
+    "HybridSolid3D",
+    "RegularGrid3D",
+    "LightRegularGrid3D"
+  ],
+  "GeodeModelType": [
+    "BRep",
+    "Section",
+    "StructuralModel",
+    "CrossSection",
+    "ImplicitStructuralModel",
+    "ImplicitCrossSection",
+    "HorizonStack3D"
+  ],
+  "GeodeObjectType": [
+    "VertexSet",
+    "Graph",
+    "PointSet2D",
+    "PointSet3D",
+    "EdgedCurve2D",
+    "EdgedCurve3D",
+    "RasterImage2D",
+    "PolygonalSurface2D",
+    "PolygonalSurface3D",
+    "TriangulatedSurface2D",
+    "TriangulatedSurface3D",
+    "RegularGrid2D",
+    "LightRegularGrid2D",
+    "RasterImage3D",
+    "PolyhedralSolid3D",
+    "TetrahedralSolid3D",
+    "HybridSolid3D",
+    "RegularGrid3D",
+    "LightRegularGrid3D",
+    "BRep",
+    "Section",
+    "StructuralModel",
+    "CrossSection",
+    "ImplicitStructuralModel",
+    "ImplicitCrossSection",
+    "HorizonStack3D"
+  ],
+  "ViewerObjectType": [
+    "mesh",
+    "model"
+  ],
+  "ViewerElementsType": [
+    "points",
+    "edges",
+    "polygons",
+    "polyhedra",
+    "default"
+  ]
+}

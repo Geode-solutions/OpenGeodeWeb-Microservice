@@ -1,0 +1,12 @@
+{
+  "DataId": {
+    "type": "string",
+    "minLength": 32,
+    "maxLength": 32
+  },
+  "GeodeId": {
+    "type": "string",
+    "minLength": 36,
+    "maxLength": 36
+  }
+}
