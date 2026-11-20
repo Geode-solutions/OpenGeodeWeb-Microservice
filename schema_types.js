@@ -43,6 +43,20 @@ function packageDirectory(name, fromDir) {
   }
 }
 
+// The packages of the scope installed in the node_modules of a package itself, not of its parents. The CI installs
+// The dependencies of a package there, but without their "0.0.0" versions in its package.json. In the workspace, the
+// Packages are installed in the node_modules of the workspace, and the package.json of each package lists them
+function installedDependencies(packageDir) {
+  const scopeDir = path.join(packageDir, "node_modules", SCHEMA_TYPES_SCOPE);
+  if (!fs.existsSync(scopeDir)) {
+    return [];
+  }
+  return fs
+    .readdirSync(scopeDir)
+    .filter((name) => fs.existsSync(path.join(scopeDir, name, "package.json")))
+    .map((name) => `${SCHEMA_TYPES_SCOPE}${name}`);
+}
+
 // A package and its schema types: schema_types.json and the code generated from it are in its Python package
 function packageLayer(packageDir) {
   const { name, dependencies = {} } = readJson(path.join(packageDir, "package.json"));
@@ -52,9 +66,14 @@ function packageLayer(packageDir) {
     name,
     packageDir,
     pythonPackage,
-    dependencies: Object.keys(dependencies).filter((dependency) =>
-      dependency.startsWith(SCHEMA_TYPES_SCOPE),
-    ),
+    dependencies: [
+      ...new Set([
+        ...Object.keys(dependencies).filter((dependency) =>
+          dependency.startsWith(SCHEMA_TYPES_SCOPE),
+        ),
+        ...installedDependencies(packageDir),
+      ]),
+    ],
     jsonFile,
     typescriptFile: jsonFile.replace(/\.json$/, ".d.ts"),
     pythonFile: jsonFile.replace(/\.json$/, ".py"),
