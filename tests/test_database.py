@@ -5,7 +5,6 @@ from typing import get_args
 import pytest
 from sqlalchemy import select
 
-from opengeodeweb_microservice.database import data_types
 from opengeodeweb_microservice.database.connection import get_session
 from opengeodeweb_microservice.database.data import Data
 from opengeodeweb_microservice.database.data_types import (
@@ -19,7 +18,8 @@ from opengeodeweb_microservice.database.data_types import (
     geode_object_type,
 )
 
-DATABASE_DIR = Path(data_types.__file__).parent
+# The generated files ship with the npm package, not the Python one: read them from the sources
+DATABASE_DIR = Path(__file__).parents[1] / "src" / "opengeodeweb_microservice" / "database"
 GEODE_ID = "01a08187-2c4c-7e64-85c5-52c3439f0626"
 
 
