@@ -1,5 +1,9 @@
 from typing import Literal, cast, get_args
 
+GeodeImageType = Literal[
+    "RasterImage2D",
+    "RasterImage3D",
+]
 GeodePointMeshType = Literal[
     "PointSet2D",
     "PointSet3D",
@@ -9,7 +13,6 @@ GeodeEdgeMeshType = Literal[
     "EdgedCurve3D",
 ]
 GeodePolygonMeshType = Literal[
-    "RasterImage2D",
     "PolygonalSurface2D",
     "PolygonalSurface3D",
     "TriangulatedSurface2D",
@@ -18,7 +21,6 @@ GeodePolygonMeshType = Literal[
     "LightRegularGrid2D",
 ]
 GeodePolyhedronMeshType = Literal[
-    "RasterImage3D",
     "PolyhedralSolid3D",
     "TetrahedralSolid3D",
     "HybridSolid3D",
@@ -44,7 +46,7 @@ GeodeModelType = Literal[
     "ImplicitCrossSection",
     "HorizonStack3D",
 ]
-GeodeObjectType = GeodeMeshType | GeodeModelType
+GeodeObjectType = GeodeImageType | GeodeMeshType | GeodeModelType
 
 
 def _flatten_literal_args(literal: object) -> tuple[str, ...]:
@@ -73,6 +75,6 @@ def geode_object_type(value: str) -> GeodeObjectType:
     return cast("GeodeObjectType", value)
 
 
-ViewerObjectType = Literal["mesh", "model"]
+ViewerObjectType = Literal["image", "mesh", "model"]
 
 ViewerElementsType = Literal["points", "edges", "polygons", "polyhedra", "default"]
